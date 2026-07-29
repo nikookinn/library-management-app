@@ -38,3 +38,6 @@ out/
 
 # Database files
 data/
+
+# Local environment secrets
+.env

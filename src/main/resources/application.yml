@@ -1,8 +1,13 @@
 spring:
   application:
     name: Library-Management-Application
+  config:
+    import: optional:file:.env[.properties]
   profiles:
     active: dev
+
+jwt:
+  secret: ${JWT_SECRET}
 
 ---
 spring:
