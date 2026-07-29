@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:library-management-test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+jwt:
+  secret: dGVzdC1vbmx5LWp3dC1zZWNyZXQta2V5LXNob3VsZC1iZS0zMi1ieXRlcy1sb25n
