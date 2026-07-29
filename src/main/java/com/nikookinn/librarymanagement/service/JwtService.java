@@ -1,6 +1,7 @@
 package com.nikookinn.librarymanagement.service;
 
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -24,5 +25,15 @@ public class JwtService {
                 .claim("role", role)
                 .signWith(signingKey)
                 .compact();
+    }
+
+    public String getEmailFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(signingKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.getSubject();
     }
 }
