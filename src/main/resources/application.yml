@@ -10,6 +10,11 @@ jwt:
   secret: ${JWT_SECRET}
   expiration-ms: ${JWT_EXPIRATION_MS:3600000}
 
+app:
+  admin:
+    email: ${INITIAL_ADMIN_EMAIL}
+    password: ${INITIAL_ADMIN_PASSWORD}
+
 ---
 spring:
   config:

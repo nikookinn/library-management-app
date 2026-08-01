@@ -32,9 +32,13 @@ Add these values to `.env` before running the application:
 ```text
 JWT_SECRET=your-base64-encoded-secret-with-at-least-32-bytes
 JWT_EXPIRATION_MS=3600000
+INITIAL_ADMIN_EMAIL=admin@example.com
+INITIAL_ADMIN_PASSWORD=choose-a-strong-password
 ```
 
 `JWT_EXPIRATION_MS=3600000` means that a token is valid for one hour. Do not add the real JWT secret to `application.yml` or commit it to Git.
+
+When the application starts with no ADMIN user, it creates one account from `INITIAL_ADMIN_EMAIL` and `INITIAL_ADMIN_PASSWORD`. The password is stored with BCrypt. If an ADMIN already exists, no new default admin is created.
 
 ### How to Run
 It is very easy to run this project. You have two options:
