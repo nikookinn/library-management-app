@@ -12,6 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class MemberServiceImpl implements MemberService {
@@ -79,5 +81,13 @@ public class MemberServiceImpl implements MemberService {
     public Page<MemberResponse> searchMembersByEmail(String email, Pageable pageable) {
         return memberRepository.findByEmailContainingIgnoreCase(email, pageable)
                 .map(MemberMapper::toResponse);
+    }
+
+    @Override
+    public List<MemberResponse> getMembersWithOverdueLoans() {
+        return memberRepository.findMembersWithOverdueLoans()
+                .stream()
+                .map(MemberMapper::toResponse)
+                .collect(Collectors.toList());
     }
 }

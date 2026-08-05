@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/members")
 public class MemberController implements MemberApi {
@@ -76,5 +78,11 @@ public class MemberController implements MemberApi {
             @PageableDefault(size = 10, page = 0) Pageable pageable) {
         Page<MemberResponse> members = memberService.searchMembersByEmail(email, pageable);
         return ResponseEntity.ok(members);
+    }
+
+    @Override
+    @GetMapping("/overdue")
+    public ResponseEntity<List<MemberResponse>> getMembersWithOverdueLoans() {
+        return ResponseEntity.ok(memberService.getMembersWithOverdueLoans());
     }
 }

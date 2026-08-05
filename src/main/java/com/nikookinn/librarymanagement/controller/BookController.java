@@ -4,6 +4,8 @@ import com.nikookinn.librarymanagement.controller.api.BookApi;
 import com.nikookinn.librarymanagement.dto.request.BookCreateRequest;
 import com.nikookinn.librarymanagement.dto.response.BookResponse;
 import com.nikookinn.librarymanagement.dto.request.BookUpdateRequest;
+import com.nikookinn.librarymanagement.dto.response.CategoryStatsResponse;
+import com.nikookinn.librarymanagement.dto.response.BookLoanStatsResponse;
 import com.nikookinn.librarymanagement.service.BookService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -12,6 +14,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/books")
@@ -111,5 +115,39 @@ public class BookController implements BookApi {
             @PathVariable Long authorId) {
         bookService.removeAuthorFromBook(bookId, authorId);
         return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    @GetMapping("/never-borrowed")
+    public ResponseEntity<List<BookResponse>> getBooksNeverBorrowed() {
+        return ResponseEntity.ok(bookService.getBooksNeverBorrowed());
+    }
+
+    @Override
+    @GetMapping("/top-categories")
+    public ResponseEntity<List<CategoryStatsResponse>> getTopCategories() {
+        return ResponseEntity.ok(bookService.getTopCategories());
+    }
+
+    @Override
+    @GetMapping("/available/details")
+    public ResponseEntity<List<BookResponse>> getAvailableBooksWithDetails(
+            @PageableDefault(size = 10, page = 0) Pageable pageable) {
+        return ResponseEntity.ok(bookService.getAvailableBooksWithDetails(pageable));
+    }
+
+    @Override
+    @GetMapping("/category/{categoryId}/min-copies/{minCopies}")
+    public ResponseEntity<List<BookResponse>> getBooksByCategoryAndAvailability(
+            @PathVariable Long categoryId,
+            @PathVariable int minCopies) {
+        return ResponseEntity.ok(bookService.getBooksByCategoryAndAvailability(categoryId, minCopies));
+    }
+
+    @Override
+    @GetMapping("/most-borrowed")
+    public ResponseEntity<List<BookLoanStatsResponse>> getMostBorrowedBooks(
+            @RequestParam(defaultValue = "5") int limit) {
+        return ResponseEntity.ok(bookService.getMostBorrowedBooks(limit));
     }
 }

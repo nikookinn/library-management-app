@@ -3,6 +3,8 @@ package com.nikookinn.librarymanagement.service.impl;
 import com.nikookinn.librarymanagement.dto.request.BookCreateRequest;
 import com.nikookinn.librarymanagement.dto.response.BookResponse;
 import com.nikookinn.librarymanagement.dto.request.BookUpdateRequest;
+import com.nikookinn.librarymanagement.dto.response.CategoryStatsResponse;
+import com.nikookinn.librarymanagement.dto.response.BookLoanStatsResponse;
 import com.nikookinn.librarymanagement.entity.Author;
 import com.nikookinn.librarymanagement.entity.Book;
 import com.nikookinn.librarymanagement.entity.Category;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class BookServiceImpl implements BookService {
@@ -156,6 +159,51 @@ public class BookServiceImpl implements BookService {
         
         book.removeAuthor(author);
         bookRepository.save(book);
+    }
+
+    @Override
+    public List<BookResponse> getBooksNeverBorrowed() {
+        return bookRepository.findBooksNeverBorrowed()
+                .stream()
+                .map(BookMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CategoryStatsResponse> getTopCategories() {
+        return bookRepository.findTopCategoriesByLoans()
+                .stream()
+                .map(obj -> new CategoryStatsResponse((String) obj[0], ((Number) obj[1]).longValue()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<BookResponse> getAvailableBooksWithDetails(Pageable pageable) {
+        return bookRepository.findAvailableBooksWithDetails(pageable)
+                .stream()
+                .map(BookMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<BookResponse> getBooksByCategoryAndAvailability(Long categoryId, int minCopies) {
+        return bookRepository.findByCategoryAndAvailability(categoryId, minCopies)
+                .stream()
+                .map(BookMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<BookLoanStatsResponse> getMostBorrowedBooks(int limit) {
+        return bookRepository.findMostBorrowedBooks(limit)
+                .stream()
+                .map(obj -> new BookLoanStatsResponse(
+                        ((Number) obj[0]).longValue(),
+                        (String) obj[1],
+                        (String) obj[2],
+                        ((Number) obj[3]).longValue()
+                ))
+                .collect(Collectors.toList());
     }
 
 }

@@ -14,6 +14,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
+
 @Tag(name = "Member", description = "Operations for managing library members")
 public interface MemberApi {
 
@@ -42,4 +44,7 @@ public interface MemberApi {
 
     @Operation(summary = "Search members by email")
     ResponseEntity<Page<MemberResponse>> searchByEmail(String email, Pageable pageable);
+
+    @Operation(summary = "Get members with overdue loans")
+    ResponseEntity<List<MemberResponse>> getMembersWithOverdueLoans();
 }

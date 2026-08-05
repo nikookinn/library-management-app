@@ -3,6 +3,8 @@ package com.nikookinn.librarymanagement.controller.api;
 import com.nikookinn.librarymanagement.dto.request.BookCreateRequest;
 import com.nikookinn.librarymanagement.dto.request.BookUpdateRequest;
 import com.nikookinn.librarymanagement.dto.response.BookResponse;
+import com.nikookinn.librarymanagement.dto.response.CategoryStatsResponse;
+import com.nikookinn.librarymanagement.dto.response.BookLoanStatsResponse;
 import com.nikookinn.librarymanagement.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -14,6 +16,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+
+import java.util.List;
 
 @Tag(name = "Book", description = "Operations for managing books")
 public interface BookApi {
@@ -60,4 +64,19 @@ public interface BookApi {
 
     @Operation(summary = "Remove author from a book")
     ResponseEntity<Void> removeAuthorFromBook(Long bookId, Long authorId);
+
+    @Operation(summary = "Get books that were never borrowed")
+    ResponseEntity<List<BookResponse>> getBooksNeverBorrowed();
+
+    @Operation(summary = "Get top categories by loan count")
+    ResponseEntity<List<CategoryStatsResponse>> getTopCategories();
+
+    @Operation(summary = "Get available books with full details")
+    ResponseEntity<List<BookResponse>> getAvailableBooksWithDetails(Pageable pageable);
+
+    @Operation(summary = "Get books by category and minimum availability")
+    ResponseEntity<List<BookResponse>> getBooksByCategoryAndAvailability(Long categoryId, int minCopies);
+
+    @Operation(summary = "Get most borrowed books")
+    ResponseEntity<List<BookLoanStatsResponse>> getMostBorrowedBooks(int limit);
 }

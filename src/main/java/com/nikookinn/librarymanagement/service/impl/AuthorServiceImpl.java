@@ -3,6 +3,7 @@ package com.nikookinn.librarymanagement.service.impl;
 import com.nikookinn.librarymanagement.dto.request.AuthorCreateRequest;
 import com.nikookinn.librarymanagement.dto.response.AuthorResponse;
 import com.nikookinn.librarymanagement.dto.request.AuthorUpdateRequest;
+import com.nikookinn.librarymanagement.dto.response.ProlificAuthorResponse;
 import com.nikookinn.librarymanagement.entity.Author;
 import com.nikookinn.librarymanagement.exception.ResourceNotFoundException;
 import com.nikookinn.librarymanagement.mapper.AuthorMapper;
@@ -11,6 +12,9 @@ import com.nikookinn.librarymanagement.service.AuthorService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthorServiceImpl implements AuthorService {
@@ -73,5 +77,49 @@ public class AuthorServiceImpl implements AuthorService {
     public Page<AuthorResponse> searchAuthors(String name, Pageable pageable) {
         return authorRepository.findByNameContainingIgnoreCase(name, pageable)
                 .map(AuthorMapper::toResponse);
+    }
+
+    @Override
+    public List<AuthorResponse> getAuthorsByCategory(String categoryName) {
+        return authorRepository.findAuthorsByCategoryName(categoryName)
+                .stream()
+                .map(AuthorMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AuthorResponse> getMultiCategoryAuthors() {
+        return authorRepository.findMultiCategoryAuthors()
+                .stream()
+                .map(AuthorMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AuthorResponse> getAuthorsWithBooks() {
+        return authorRepository.findAuthorsWithBooks()
+                .stream()
+                .map(AuthorMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AuthorResponse> getAuthorsByNationality(String nationality) {
+        return authorRepository.findByNationality(nationality)
+                .stream()
+                .map(AuthorMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProlificAuthorResponse> getProlificAuthors(int minBooks) {
+        return authorRepository.findProlificsAuthors(minBooks)
+                .stream()
+                .map(obj -> new ProlificAuthorResponse(
+                        ((Number) obj[0]).longValue(),
+                        (String) obj[1] + " " + (String) obj[2],
+                        ((Number) obj[3]).longValue()
+                ))
+                .collect(Collectors.toList());
     }
 }

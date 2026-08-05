@@ -3,9 +3,12 @@ package com.nikookinn.librarymanagement.service;
 import com.nikookinn.librarymanagement.dto.request.LoanCreateRequest;
 import com.nikookinn.librarymanagement.dto.response.LoanResponse;
 import com.nikookinn.librarymanagement.dto.request.LoanUpdateRequest;
+import com.nikookinn.librarymanagement.dto.response.OverdueLoanResponse;
 import com.nikookinn.librarymanagement.entity.LoanStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 public interface LoanService {
     Page<LoanResponse> getAllLoans(Pageable pageable);
@@ -20,4 +23,8 @@ public interface LoanService {
     Page<LoanResponse> getOverdueLoans(Pageable pageable);
     
     LoanResponse returnLoan(Long loanId);
+    List<OverdueLoanResponse> getOverdueDetails();
+    Page<LoanResponse> getLoansByMemberAndStatus(Long memberId, LoanStatus status, Pageable pageable);
+    List<LoanResponse> getLoansByMemberWithDetails(Long memberId, LoanStatus status);
+    List<LoanResponse> getActiveLoansByBook(Long bookId);
 }

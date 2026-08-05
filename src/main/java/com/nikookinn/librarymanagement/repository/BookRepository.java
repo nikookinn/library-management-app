@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface BookRepository extends JpaRepository<Book, Long> {
     Page<Book> findByCategory_Id(Long categoryId, Pageable pageable);
     
@@ -16,4 +18,27 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     Page<Book> findByTitleContainingIgnoreCase(String title, Pageable pageable);
     
     Page<Book> findByAvailableCopiesGreaterThan(Integer copies, Pageable pageable);
+
+    @Query("SELECT DISTINCT b FROM Book b JOIN FETCH b.authors JOIN FETCH b.category WHERE b.availableCopies > 0 ORDER BY b.title ASC")
+    List<Book> findAvailableBooksWithDetails(Pageable pageable);
+
+    @Query("SELECT b FROM Book b WHERE b.category.id = :categoryId AND b.availableCopies > :minCopies ORDER BY b.title ASC")
+    List<Book> findByCategoryAndAvailability(@Param("categoryId") Long categoryId, @Param("minCopies") Integer minCopies);
+
+    @Query(value = "SELECT b.id, b.title, b.isbn, COUNT(l.id) AS loan_count FROM books b LEFT JOIN loans l ON b.id = l.book_id AND l.status IN ('ACTIVE', 'OVERDUE') GROUP BY b.id, b.title, b.isbn ORDER BY loan_count DESC LIMIT :limit", nativeQuery = true)
+    List<Object[]> findMostBorrowedBooks(@Param("limit") int limit);
+
+    @Query("SELECT b FROM Book b WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(b.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<Book> searchByTitleOrDescription(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query(value = "SELECT b.* FROM books b WHERE b.id NOT IN (SELECT DISTINCT book_id FROM loans)", nativeQuery = true)
+    List<Book> findBooksNeverBorrowed();
+
+    @Query(value = "SELECT c.name, COUNT(l.id) as loan_count " +
+            "FROM categories c " +
+            "JOIN books b ON c.id = b.category_id " +
+            "JOIN loans l ON b.id = l.book_id " +
+            "GROUP BY c.id, c.name " +
+            "ORDER BY loan_count DESC", nativeQuery = true)
+    List<Object[]> findTopCategoriesByLoans();
 }

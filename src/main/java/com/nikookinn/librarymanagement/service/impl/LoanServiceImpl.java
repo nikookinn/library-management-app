@@ -3,6 +3,7 @@ package com.nikookinn.librarymanagement.service.impl;
 import com.nikookinn.librarymanagement.dto.request.LoanCreateRequest;
 import com.nikookinn.librarymanagement.dto.request.LoanUpdateRequest;
 import com.nikookinn.librarymanagement.dto.response.LoanResponse;
+import com.nikookinn.librarymanagement.dto.response.OverdueLoanResponse;
 import com.nikookinn.librarymanagement.entity.Book;
 import com.nikookinn.librarymanagement.entity.Loan;
 import com.nikookinn.librarymanagement.entity.LoanStatus;
@@ -20,6 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class LoanServiceImpl implements LoanService {
@@ -151,6 +155,47 @@ public class LoanServiceImpl implements LoanService {
         book.setAvailableCopies(book.getAvailableCopies() + 1);
         bookRepository.save(book);
         return LoanMapper.toResponse(loanRepository.save(loan));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OverdueLoanResponse> getOverdueDetails() {
+        markOverdueLoans();
+        LocalDateTime now = LocalDateTime.now();
+        return loanRepository.findOverdueDetails().stream()
+                .map(d -> new OverdueLoanResponse(
+                        d.loanId(),
+                        d.memberName(),
+                        d.bookTitle(),
+                        d.dueDate(),
+                        ChronoUnit.DAYS.between(d.dueDate(), now)
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<LoanResponse> getLoansByMemberAndStatus(Long memberId, LoanStatus status, Pageable pageable) {
+        return loanRepository.findByMember_IdAndStatus(memberId, status, pageable)
+                .map(LoanMapper::toResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LoanResponse> getLoansByMemberWithDetails(Long memberId, LoanStatus status) {
+        return loanRepository.findLoansByMemberWithDetails(memberId, status)
+                .stream()
+                .map(LoanMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LoanResponse> getActiveLoansByBook(Long bookId) {
+        return loanRepository.findActiveLoansByBook(bookId)
+                .stream()
+                .map(LoanMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     private void markOverdueLoans() {

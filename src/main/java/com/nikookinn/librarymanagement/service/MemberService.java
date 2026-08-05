@@ -6,6 +6,8 @@ import com.nikookinn.librarymanagement.dto.request.MemberUpdateRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface MemberService {
     Page<MemberResponse> getAllMembers(Pageable pageable);
     MemberResponse getMemberById(Long id);
@@ -15,4 +17,5 @@ public interface MemberService {
     
     Page<MemberResponse> searchMembersByName(String name, Pageable pageable);
     Page<MemberResponse> searchMembersByEmail(String email, Pageable pageable);
+    List<MemberResponse> getMembersWithOverdueLoans();
 }

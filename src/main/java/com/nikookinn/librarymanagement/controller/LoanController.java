@@ -4,6 +4,7 @@ import com.nikookinn.librarymanagement.controller.api.LoanApi;
 import com.nikookinn.librarymanagement.dto.request.LoanCreateRequest;
 import com.nikookinn.librarymanagement.dto.response.LoanResponse;
 import com.nikookinn.librarymanagement.dto.request.LoanUpdateRequest;
+import com.nikookinn.librarymanagement.dto.response.OverdueLoanResponse;
 import com.nikookinn.librarymanagement.entity.LoanStatus;
 import com.nikookinn.librarymanagement.service.LoanService;
 import jakarta.validation.Valid;
@@ -13,6 +14,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/loans")
@@ -100,5 +103,34 @@ public class LoanController implements LoanApi {
     public ResponseEntity<LoanResponse> returnLoan(@PathVariable Long id) {
         LoanResponse returned = loanService.returnLoan(id);
         return ResponseEntity.ok(returned);
+    }
+
+    @Override
+    @GetMapping("/overdue/details")
+    public ResponseEntity<List<OverdueLoanResponse>> getOverdueDetails() {
+        return ResponseEntity.ok(loanService.getOverdueDetails());
+    }
+
+    @Override
+    @GetMapping("/member/{memberId}/status/{status}")
+    public ResponseEntity<Page<LoanResponse>> getLoansByMemberAndStatus(
+            @PathVariable Long memberId,
+            @PathVariable LoanStatus status,
+            @PageableDefault(size = 10, page = 0) Pageable pageable) {
+        return ResponseEntity.ok(loanService.getLoansByMemberAndStatus(memberId, status, pageable));
+    }
+
+    @Override
+    @GetMapping("/member/{memberId}/status/{status}/details")
+    public ResponseEntity<List<LoanResponse>> getLoansByMemberWithDetails(
+            @PathVariable Long memberId,
+            @PathVariable LoanStatus status) {
+        return ResponseEntity.ok(loanService.getLoansByMemberWithDetails(memberId, status));
+    }
+
+    @Override
+    @GetMapping("/book/{bookId}/active")
+    public ResponseEntity<List<LoanResponse>> getActiveLoansByBook(@PathVariable Long bookId) {
+        return ResponseEntity.ok(loanService.getActiveLoansByBook(bookId));
     }
 }
