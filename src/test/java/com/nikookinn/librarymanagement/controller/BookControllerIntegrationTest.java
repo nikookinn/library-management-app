@@ -10,6 +10,7 @@ import com.nikookinn.librarymanagement.repository.AuthorRepository;
 import com.nikookinn.librarymanagement.repository.BookRepository;
 import com.nikookinn.librarymanagement.repository.CategoryRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @Transactional
+@DisplayName("Book Controller Integration Tests")
 class BookControllerIntegrationTest {
 
     private MockMvc mockMvc;
@@ -73,6 +75,7 @@ class BookControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should get all books")
     void shouldGetAllBooks() throws Exception {
         // Act & Assert
         mockMvc.perform(get("/api/books"))
@@ -82,6 +85,7 @@ class BookControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should get book by ID")
     void shouldGetBookById() throws Exception {
         // Act & Assert
         mockMvc.perform(get("/api/books/{id}", book.getId()))
@@ -90,6 +94,7 @@ class BookControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should create book")
     void shouldCreateBook() throws Exception {
         // Arrange
         BookCreateRequest request = new BookCreateRequest(
@@ -110,6 +115,7 @@ class BookControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should update book")
     void shouldUpdateBook() throws Exception {
         // Arrange
         BookUpdateRequest request = new BookUpdateRequest(
@@ -130,6 +136,7 @@ class BookControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should delete book")
     void shouldDeleteBook() throws Exception {
         // Act & Assert
         mockMvc.perform(delete("/api/books/{id}", book.getId()))
@@ -140,6 +147,7 @@ class BookControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should search books")
     void shouldSearchBooks() throws Exception {
         // Act & Assert
         mockMvc.perform(get("/api/books/search").param("query", "fellowship"))
@@ -148,3 +156,4 @@ class BookControllerIntegrationTest {
                 .andExpect(jsonPath("$.content[0].title").value("The Fellowship of the Ring"));
     }
 }
+

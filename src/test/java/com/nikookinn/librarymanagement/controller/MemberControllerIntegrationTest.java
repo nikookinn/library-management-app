@@ -6,6 +6,7 @@ import com.nikookinn.librarymanagement.dto.request.MemberUpdateRequest;
 import com.nikookinn.librarymanagement.entity.Member;
 import com.nikookinn.librarymanagement.repository.MemberRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @Transactional
+@DisplayName("Member Controller Integration Tests")
 class MemberControllerIntegrationTest {
 
     private MockMvc mockMvc;
@@ -50,6 +52,7 @@ class MemberControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should get all members")
     void shouldGetAllMembers() throws Exception {
         // Act & Assert
         mockMvc.perform(get("/api/members"))
@@ -59,6 +62,7 @@ class MemberControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should get member by ID")
     void shouldGetMemberById() throws Exception {
         // Act & Assert
         mockMvc.perform(get("/api/members/{id}", member.getId()))
@@ -67,6 +71,7 @@ class MemberControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should create member")
     void shouldCreateMember() throws Exception {
         // Arrange
         MemberCreateRequest request = new MemberCreateRequest(
@@ -85,6 +90,7 @@ class MemberControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should update member")
     void shouldUpdateMember() throws Exception {
         // Arrange
         MemberUpdateRequest request = new MemberUpdateRequest(
@@ -103,6 +109,7 @@ class MemberControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should delete member")
     void shouldDeleteMember() throws Exception {
         // Act & Assert
         mockMvc.perform(delete("/api/members/{id}", member.getId()))

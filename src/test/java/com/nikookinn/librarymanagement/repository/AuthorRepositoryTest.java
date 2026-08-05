@@ -2,6 +2,7 @@ package com.nikookinn.librarymanagement.repository;
 
 import com.nikookinn.librarymanagement.entity.Author;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
+@DisplayName("Author Repository Integration Tests")
 class AuthorRepositoryTest {
 
     @Autowired
@@ -45,6 +47,7 @@ class AuthorRepositoryTest {
     }
 
     @Test
+    @DisplayName("should find author by full name containing (case-insensitive)")
     void shouldFindAuthorByFullNameContainingIgnoreCase() {
         // Arrange
         String searchTerm = "tolkien";
@@ -59,6 +62,7 @@ class AuthorRepositoryTest {
     }
 
     @Test
+    @DisplayName("should find author by last name containing (case-insensitive)")
     void shouldFindAuthorByLastNameContainingIgnoreCase() {
         // Arrange
         String searchTerm = "rowling";
@@ -73,6 +77,7 @@ class AuthorRepositoryTest {
     }
 
     @Test
+    @DisplayName("should return empty page when author not found by name")
     void shouldReturnEmptyPageWhenAuthorNotFoundByName() {
         // Arrange
         String searchTerm = "NonExistent";
@@ -85,3 +90,4 @@ class AuthorRepositoryTest {
         assertThat(result.getContent()).isEmpty();
     }
 }
+

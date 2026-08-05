@@ -6,6 +6,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -41,20 +44,20 @@ public class Book {
     @PositiveOrZero(message = "Available copies must be zero or positive")
     private Integer availableCopies;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "book_authors",
         joinColumns = @JoinColumn(name = "book_id"),
         inverseJoinColumns = @JoinColumn(name = "author_id")
     )
-    private Set<Author> authors;
+    private Set<Author> authors = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Loan> loans;
+    private List<Loan> loans = new ArrayList<>();
 
     @Version
     private Long version;
@@ -79,9 +82,9 @@ public class Book {
         this.description = description;
         this.totalCopies = totalCopies;
         this.availableCopies = availableCopies;
-        this.authors = authors;
+        setAuthors(authors);
         this.category = category;
-        this.loans = loans;
+        setLoans(loans);
     }
 
     public Long getId() {
@@ -141,11 +144,11 @@ public class Book {
     }
 
     public Set<Author> getAuthors() {
-        return authors;
+        return Collections.unmodifiableSet(authors);
     }
 
     public void setAuthors(Set<Author> authors) {
-        this.authors = authors;
+        this.authors = authors == null ? new HashSet<>() : new HashSet<>(authors);
     }
 
     public Category getCategory() {
@@ -157,23 +160,62 @@ public class Book {
     }
 
     public List<Loan> getLoans() {
-        return loans;
+        return Collections.unmodifiableList(loans);
     }
 
     public void setLoans(List<Loan> loans) {
-        this.loans = loans;
+        this.loans = loans == null ? new ArrayList<>() : new ArrayList<>(loans);
+    }
+
+    /**
+     * Owning side of the book-author many-to-many. Keeps both collections in sync so the
+     * in-memory graph matches what is written to the {@code book_authors} join table.
+     */
+    public void addAuthor(Author author) {
+        if (author == null || !authors.add(author)) {
+            return;
+        }
+        author.internalGetBooks().add(this);
+    }
+
+    public void removeAuthor(Author author) {
+        if (author == null || !authors.remove(author)) {
+            return;
+        }
+        author.internalGetBooks().remove(this);
+    }
+
+    public void addLoan(Loan loan) {
+        if (loan == null || loans.contains(loan)) {
+            return;
+        }
+        loans.add(loan);
+        loan.setBook(this);
+    }
+
+    public void removeLoan(Loan loan) {
+        if (loan == null || !loans.remove(loan)) {
+            return;
+        }
+        loan.setBook(null);
+    }
+
+    List<Loan> internalGetLoans() {
+        return loans;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Book book)) return false;
-        return Objects.equals(getId(), book.getId());
+        // Two unsaved instances are never equal; only a persisted identifier makes them the same book.
+        return id != null && id.equals(book.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(getId());
+        // Constant so the hash does not change when the identifier is assigned on persist.
+        return Book.class.hashCode();
     }
 
     @Override

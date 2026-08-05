@@ -5,6 +5,7 @@ import com.nikookinn.librarymanagement.entity.Loan;
 import com.nikookinn.librarymanagement.entity.LoanStatus;
 import com.nikookinn.librarymanagement.entity.Member;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
+@DisplayName("Loan Repository Integration Tests")
 class LoanRepositoryTest {
 
     @Autowired
@@ -64,11 +66,12 @@ class LoanRepositoryTest {
         overdueLoan.setBook(book);
         overdueLoan.setBorrowDate(LocalDateTime.now().minusDays(20));
         overdueLoan.setDueDate(LocalDateTime.now().minusDays(6));
-        overdueLoan.setStatus(LoanStatus.ACTIVE); // Will be updated to OVERDUE in test
+        overdueLoan.setStatus(LoanStatus.ACTIVE);
         loanRepository.save(overdueLoan);
     }
 
     @Test
+    @DisplayName("should find loans by member ID")
     void shouldFindLoansByMemberId() {
         // Arrange
         Pageable pageable = PageRequest.of(0, 10);
@@ -81,6 +84,7 @@ class LoanRepositoryTest {
     }
 
     @Test
+    @DisplayName("should find loans by status")
     void shouldFindLoansByStatus() {
         // Arrange
         Pageable pageable = PageRequest.of(0, 10);
@@ -93,6 +97,7 @@ class LoanRepositoryTest {
     }
 
     @Test
+    @DisplayName("should count active loans for book")
     void shouldCountActiveLoansForBook() {
         // Act
         long count = loanRepository.countByBook_IdAndStatusIn(book.getId(), List.of(LoanStatus.ACTIVE));
@@ -102,6 +107,7 @@ class LoanRepositoryTest {
     }
 
     @Test
+    @DisplayName("should mark overdue loans")
     void shouldMarkOverdueLoans() {
         // Act
         int updatedCount = loanRepository.markOverdueLoans(LocalDateTime.now());
@@ -113,3 +119,4 @@ class LoanRepositoryTest {
         assertThat(updatedLoan.getStatus()).isEqualTo(LoanStatus.OVERDUE);
     }
 }
+

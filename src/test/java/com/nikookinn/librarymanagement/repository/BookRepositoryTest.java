@@ -4,6 +4,7 @@ import com.nikookinn.librarymanagement.entity.Author;
 import com.nikookinn.librarymanagement.entity.Book;
 import com.nikookinn.librarymanagement.entity.Category;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
+@DisplayName("Book Repository Integration Tests")
 class BookRepositoryTest {
 
     @Autowired
@@ -66,6 +68,7 @@ class BookRepositoryTest {
     }
 
     @Test
+    @DisplayName("should find books by category ID")
     void shouldFindBooksByCategoryId() {
         // Arrange
         Pageable pageable = PageRequest.of(0, 10);
@@ -79,6 +82,7 @@ class BookRepositoryTest {
     }
 
     @Test
+    @DisplayName("should find books by author ID")
     void shouldFindBooksByAuthorId() {
         // Arrange
         Pageable pageable = PageRequest.of(0, 10);
@@ -91,6 +95,7 @@ class BookRepositoryTest {
     }
 
     @Test
+    @DisplayName("should find books by title containing (case-insensitive)")
     void shouldFindBooksByTitleContainingIgnoreCase() {
         // Arrange
         String titleSearch = "hobb";
@@ -105,6 +110,7 @@ class BookRepositoryTest {
     }
 
     @Test
+    @DisplayName("should find available books")
     void shouldFindAvailableBooks() {
         // Arrange
         Pageable pageable = PageRequest.of(0, 10);
@@ -117,3 +123,4 @@ class BookRepositoryTest {
         assertThat(result.getContent().getFirst().getTitle()).isEqualTo("The Fellowship of the Ring");
     }
 }
+

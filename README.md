@@ -27,18 +27,22 @@ This is a standard Spring Boot application. I used a layered architecture here (
 ### Environment Configuration
 The project uses a local `.env` file for Docker settings and JWT configuration. This file is ignored by Git because it contains secrets.
 
-Add these values to `.env` before running the application:
+Add these values to your local `.env` file before running the application:
 
 ```text
 JWT_SECRET=your-base64-encoded-secret-with-at-least-32-bytes
 JWT_EXPIRATION_MS=3600000
-INITIAL_ADMIN_EMAIL=admin@example.com
-INITIAL_ADMIN_PASSWORD=choose-a-strong-password
+INITIAL_ADMIN_EMAIL=your-admin-email
+INITIAL_ADMIN_PASSWORD=your-strong-admin-password
 ```
 
-`JWT_EXPIRATION_MS=3600000` means that a token is valid for one hour. Do not add the real JWT secret to `application.yml` or commit it to Git.
+`JWT_EXPIRATION_MS=3600000` means that a token is valid for one hour. Do not add real secrets or passwords to `application.yml` or commit the `.env` file to Git.
+
+#### Initial admin account
 
 When the application starts with no ADMIN user, it creates one account from `INITIAL_ADMIN_EMAIL` and `INITIAL_ADMIN_PASSWORD`. The password is stored with BCrypt. If an ADMIN already exists, no new default admin is created.
+
+Use the values currently defined in your local `.env` file to log in as the initial admin. These login values are intentionally not written in this README because `.env` is local and ignored by Git. For production, set a unique email address and a strong password before the first application start.
 
 ### How to Run
 It is very easy to run this project. You have two options:

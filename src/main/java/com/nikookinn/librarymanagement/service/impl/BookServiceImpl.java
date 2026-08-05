@@ -142,7 +142,7 @@ public class BookServiceImpl implements BookService {
         Author author = authorRepository.findById(authorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Author not found with id: " + authorId));
         
-        book.getAuthors().add(author);
+        book.addAuthor(author);
         bookRepository.save(book);
     }
 
@@ -154,7 +154,7 @@ public class BookServiceImpl implements BookService {
         Author author = authorRepository.findById(authorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Author not found with id: " + authorId));
         
-        book.getAuthors().remove(author);
+        book.removeAuthor(author);
         bookRepository.save(book);
     }
 

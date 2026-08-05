@@ -1,12 +1,18 @@
 package com.nikookinn.librarymanagement.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nikookinn.librarymanagement.exception.ErrorResponse;
 import com.nikookinn.librarymanagement.service.CustomUserDetailsService;
 import com.nikookinn.librarymanagement.service.JwtService;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,10 +28,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
+    private final ObjectMapper objectMapper;
 
     public JwtAuthenticationFilter(JwtService jwtService, CustomUserDetailsService userDetailsService) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -50,10 +58,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-        } catch (JwtException | IllegalArgumentException | UsernameNotFoundException ignored) {
+        } catch (ExpiredJwtException e) {
             SecurityContextHolder.clearContext();
+            sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "Token has expired");
+            return;
+        } catch (MalformedJwtException e) {
+            SecurityContextHolder.clearContext();
+            sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "Token is malformed");
+            return;
+        } catch (JwtException | IllegalArgumentException e) {
+            SecurityContextHolder.clearContext();
+            sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "Invalid token");
+            return;
+        } catch (UsernameNotFoundException e) {
+            SecurityContextHolder.clearContext();
+            sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "User not found");
+            return;
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void sendErrorResponse(HttpServletResponse response, HttpStatus status, String message) throws IOException {
+        response.setStatus(status.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+        ErrorResponse error = new ErrorResponse(
+                status.value(),
+                message,
+                "Unauthorized"
+        );
+        objectMapper.writeValue(response.getOutputStream(), error);
     }
 }

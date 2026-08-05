@@ -2,6 +2,7 @@ package com.nikookinn.librarymanagement.repository;
 
 import com.nikookinn.librarymanagement.entity.Member;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
+@DisplayName("Member Repository Integration Tests")
 class MemberRepositoryTest {
 
     @Autowired
@@ -42,6 +44,7 @@ class MemberRepositoryTest {
     }
 
     @Test
+    @DisplayName("should find member by full name containing (case-insensitive)")
     void shouldFindMemberByFullNameContainingIgnoreCase() {
         // Arrange
         String searchTerm = "frodo";
@@ -56,6 +59,7 @@ class MemberRepositoryTest {
     }
 
     @Test
+    @DisplayName("should find member by email containing (case-insensitive)")
     void shouldFindMemberByEmailContainingIgnoreCase() {
         // Arrange
         String searchTerm = "hogwarts.com";
@@ -70,6 +74,7 @@ class MemberRepositoryTest {
     }
 
     @Test
+    @DisplayName("should return empty page when member not found")
     void shouldReturnEmptyPageWhenMemberNotFound() {
         // Arrange
         String searchTerm = "notfound";
@@ -82,3 +87,4 @@ class MemberRepositoryTest {
         assertThat(result.getContent()).isEmpty();
     }
 }
+

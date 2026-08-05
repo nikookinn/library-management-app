@@ -8,6 +8,7 @@ import com.nikookinn.librarymanagement.repository.BookRepository;
 import com.nikookinn.librarymanagement.repository.LoanRepository;
 import com.nikookinn.librarymanagement.repository.MemberRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @Transactional
+@DisplayName("Loan Controller Integration Tests")
 class LoanControllerIntegrationTest {
 
     private MockMvc mockMvc;
@@ -63,7 +65,7 @@ class LoanControllerIntegrationTest {
         book.setTitle("The Fellowship of the Ring");
         book.setIsbn("978-0618640157");
         book.setTotalCopies(10);
-        book.setAvailableCopies(9); // Decrement available copies as we create a loan below
+        book.setAvailableCopies(9);
         book = bookRepository.save(book);
 
         loan = new Loan();
@@ -76,6 +78,7 @@ class LoanControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should get all loans")
     void shouldGetAllLoans() throws Exception {
         // Act & Assert
         mockMvc.perform(get("/api/loans"))
@@ -84,6 +87,7 @@ class LoanControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should get loan by ID")
     void shouldGetLoanById() throws Exception {
         // Act & Assert
         mockMvc.perform(get("/api/loans/{id}", loan.getId()))
@@ -92,6 +96,7 @@ class LoanControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should create loan")
     void shouldCreateLoan() throws Exception {
         // Arrange
         LoanCreateRequest request = new LoanCreateRequest(
@@ -109,6 +114,7 @@ class LoanControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should return loan")
     void shouldReturnLoan() throws Exception {
         // Act & Assert
         mockMvc.perform(put("/api/loans/{id}/return", loan.getId()))
@@ -117,6 +123,7 @@ class LoanControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should update loan")
     void shouldUpdateLoan() throws Exception {
         // Arrange
         LoanUpdateRequest request = new LoanUpdateRequest(LocalDateTime.now().plusDays(30));
@@ -130,6 +137,7 @@ class LoanControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should get loans by member")
     void shouldGetLoansByMember() throws Exception {
         // Act & Assert
         mockMvc.perform(get("/api/loans/member/{memberId}", member.getId()))
@@ -138,6 +146,7 @@ class LoanControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should get loans by status")
     void shouldGetLoansByStatus() throws Exception {
         // Act & Assert
         mockMvc.perform(get("/api/loans/status/{status}", LoanStatus.ACTIVE))

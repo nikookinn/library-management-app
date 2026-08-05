@@ -6,6 +6,7 @@ import com.nikookinn.librarymanagement.dto.request.AuthorUpdateRequest;
 import com.nikookinn.librarymanagement.entity.Author;
 import com.nikookinn.librarymanagement.repository.AuthorRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @Transactional
+@DisplayName("Author Controller Integration Tests")
 class AuthorControllerIntegrationTest {
 
     private MockMvc mockMvc;
@@ -51,6 +53,7 @@ class AuthorControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should get all authors")
     void shouldGetAllAuthors() throws Exception {
         // Act & Assert
         mockMvc.perform(get("/api/authors"))
@@ -60,6 +63,7 @@ class AuthorControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should get author by ID")
     void shouldGetAuthorById() throws Exception {
         // Act & Assert
         mockMvc.perform(get("/api/authors/{id}", author.getId()))
@@ -68,6 +72,7 @@ class AuthorControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should create author")
     void shouldCreateAuthor() throws Exception {
         // Arrange
         AuthorCreateRequest request = new AuthorCreateRequest(
@@ -88,6 +93,7 @@ class AuthorControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should update author")
     void shouldUpdateAuthor() throws Exception {
         // Arrange
         AuthorUpdateRequest request = new AuthorUpdateRequest(
@@ -107,6 +113,7 @@ class AuthorControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should delete author")
     void shouldDeleteAuthor() throws Exception {
         // Act & Assert
         mockMvc.perform(delete("/api/authors/{id}", author.getId()))
@@ -117,6 +124,7 @@ class AuthorControllerIntegrationTest {
     }
 
     @Test
+    @DisplayName("should search authors")
     void shouldSearchAuthors() throws Exception {
         // Act & Assert
         mockMvc.perform(get("/api/authors/search").param("name", "tolkien"))
