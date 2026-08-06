@@ -1,6 +1,7 @@
 package com.nikookinn.librarymanagement.service.impl;
 
 import com.nikookinn.librarymanagement.dto.request.BookCreateRequest;
+import com.nikookinn.librarymanagement.dto.request.BookSearchRequest;
 import com.nikookinn.librarymanagement.dto.response.BookResponse;
 import com.nikookinn.librarymanagement.dto.request.BookUpdateRequest;
 import com.nikookinn.librarymanagement.dto.response.CategoryStatsResponse;
@@ -16,6 +17,7 @@ import com.nikookinn.librarymanagement.repository.AuthorRepository;
 import com.nikookinn.librarymanagement.repository.BookRepository;
 import com.nikookinn.librarymanagement.repository.CategoryRepository;
 import com.nikookinn.librarymanagement.repository.LoanRepository;
+import com.nikookinn.librarymanagement.repository.specification.BookSpecification;
 import com.nikookinn.librarymanagement.service.BookService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -128,6 +130,12 @@ public class BookServiceImpl implements BookService {
     @Override
     public Page<BookResponse> searchBooks(String query, Pageable pageable) {
         return bookRepository.findByTitleContainingIgnoreCase(query, pageable)
+                .map(BookMapper::toResponse);
+    }
+
+    @Override
+    public Page<BookResponse> searchBooksDynamic(BookSearchRequest request, Pageable pageable) {
+        return bookRepository.findAll(BookSpecification.filterByRequest(request), pageable)
                 .map(BookMapper::toResponse);
     }
 

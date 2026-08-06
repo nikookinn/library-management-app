@@ -214,7 +214,6 @@ public class Book {
 
     @Override
     public int hashCode() {
-        // Constant so the hash does not change when the identifier is assigned on persist.
         return Book.class.hashCode();
     }
 

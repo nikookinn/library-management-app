@@ -1,6 +1,7 @@
 package com.nikookinn.librarymanagement.controller.api;
 
 import com.nikookinn.librarymanagement.dto.request.BookCreateRequest;
+import com.nikookinn.librarymanagement.dto.request.BookSearchRequest;
 import com.nikookinn.librarymanagement.dto.request.BookUpdateRequest;
 import com.nikookinn.librarymanagement.dto.response.BookResponse;
 import com.nikookinn.librarymanagement.dto.response.CategoryStatsResponse;
@@ -55,6 +56,9 @@ public interface BookApi {
 
     @Operation(summary = "Search for books")
     ResponseEntity<Page<BookResponse>> searchBooks(String query, Pageable pageable);
+
+    @Operation(summary = "Dynamic search for books with multiple filters")
+    ResponseEntity<Page<BookResponse>> searchBooksDynamic(BookSearchRequest request, Pageable pageable);
 
     @Operation(summary = "List available books for loan")
     ResponseEntity<Page<BookResponse>> getAvailableBooks(Pageable pageable);

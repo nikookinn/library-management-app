@@ -1,6 +1,7 @@
 package com.nikookinn.librarymanagement.service;
 
 import com.nikookinn.librarymanagement.dto.request.BookCreateRequest;
+import com.nikookinn.librarymanagement.dto.request.BookSearchRequest;
 import com.nikookinn.librarymanagement.dto.response.BookResponse;
 import com.nikookinn.librarymanagement.dto.request.BookUpdateRequest;
 import com.nikookinn.librarymanagement.dto.response.CategoryStatsResponse;
@@ -20,6 +21,7 @@ public interface BookService {
     Page<BookResponse> getBooksByCategory(Long categoryId, Pageable pageable);
     Page<BookResponse> getBooksByAuthor(Long authorId, Pageable pageable);
     Page<BookResponse> searchBooks(String query, Pageable pageable);
+    Page<BookResponse> searchBooksDynamic(BookSearchRequest request, Pageable pageable);
     Page<BookResponse> getAvailableBooks(Pageable pageable);
     
     void addAuthorToBook(Long bookId, Long authorId);

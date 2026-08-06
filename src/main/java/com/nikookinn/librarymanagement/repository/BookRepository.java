@@ -4,12 +4,13 @@ import com.nikookinn.librarymanagement.entity.Book;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface BookRepository extends JpaRepository<Book, Long> {
+public interface BookRepository extends JpaRepository<Book, Long>, JpaSpecificationExecutor<Book> {
     Page<Book> findByCategory_Id(Long categoryId, Pageable pageable);
     
     @Query("SELECT b FROM Book b JOIN b.authors a WHERE a.id = :authorId")

@@ -50,6 +50,7 @@ class BookRepositoryTest {
         book1 = new Book();
         book1.setTitle("The Fellowship of the Ring");
         book1.setIsbn("978-0618640157");
+        book1.setPublishYear(1954);
         book1.setTotalCopies(5);
         book1.setAvailableCopies(5);
         book1.setCategory(category);
@@ -61,6 +62,7 @@ class BookRepositoryTest {
         Book book2 = new Book();
         book2.setTitle("The Hobbit");
         book2.setIsbn("0987654321");
+        book2.setPublishYear(1937);
         book2.setTotalCopies(3);
         book2.setAvailableCopies(0);
         book2.setAuthors(authors);

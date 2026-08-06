@@ -2,6 +2,7 @@ package com.nikookinn.librarymanagement.controller;
 
 import com.nikookinn.librarymanagement.controller.api.BookApi;
 import com.nikookinn.librarymanagement.dto.request.BookCreateRequest;
+import com.nikookinn.librarymanagement.dto.request.BookSearchRequest;
 import com.nikookinn.librarymanagement.dto.response.BookResponse;
 import com.nikookinn.librarymanagement.dto.request.BookUpdateRequest;
 import com.nikookinn.librarymanagement.dto.response.CategoryStatsResponse;
@@ -88,6 +89,15 @@ public class BookController implements BookApi {
             @RequestParam String query,
             @PageableDefault(size = 10, page = 0) Pageable pageable) {
         Page<BookResponse> books = bookService.searchBooks(query, pageable);
+        return ResponseEntity.ok(books);
+    }
+
+    @Override
+    @GetMapping("/search/dynamic")
+    public ResponseEntity<Page<BookResponse>> searchBooksDynamic(
+            BookSearchRequest request,
+            @PageableDefault(size = 10, page = 0) Pageable pageable) {
+        Page<BookResponse> books = bookService.searchBooksDynamic(request, pageable);
         return ResponseEntity.ok(books);
     }
 
