@@ -5,6 +5,7 @@ import com.nikookinn.librarymanagement.entity.LoanStatus;
 import com.nikookinn.librarymanagement.dto.response.OverdueLoanResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,10 +15,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface LoanRepository extends JpaRepository<Loan, Long> {
+    @EntityGraph(value = "Loan.details", type = EntityGraph.EntityGraphType.FETCH)
+    Page<Loan> findAll(Pageable pageable);
+
+    @EntityGraph(value = "Loan.details", type = EntityGraph.EntityGraphType.FETCH)
     Page<Loan> findByMember_Id(Long memberId, Pageable pageable);
     
+    @EntityGraph(value = "Loan.details", type = EntityGraph.EntityGraphType.FETCH)
     Page<Loan> findByMember_IdAndStatus(Long memberId, LoanStatus status, Pageable pageable);
     
+    @EntityGraph(value = "Loan.details", type = EntityGraph.EntityGraphType.FETCH)
     Page<Loan> findByStatus(LoanStatus status, Pageable pageable);
 
     long countByBook_IdAndStatusIn(Long bookId, java.util.Collection<LoanStatus> statuses);
@@ -26,6 +33,7 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
     @Query("UPDATE Loan l SET l.status = 'OVERDUE' WHERE l.status = 'ACTIVE' AND l.dueDate < :now")
     int markOverdueLoans(@Param("now") LocalDateTime now);
 
+    @EntityGraph(value = "Loan.details", type = EntityGraph.EntityGraphType.FETCH)
     @Query("SELECT l FROM Loan l WHERE l.status = 'ACTIVE' AND l.dueDate < :currentDate ORDER BY l.dueDate ASC")
     List<Loan> findOverdueLoans(@Param("currentDate") LocalDateTime currentDate, Pageable pageable);
 

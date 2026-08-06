@@ -8,6 +8,13 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "loans")
+@NamedEntityGraph(
+    name = "Loan.details",
+    attributeNodes = {
+        @NamedAttributeNode("book"),
+        @NamedAttributeNode("member")
+    }
+)
 public class Loan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

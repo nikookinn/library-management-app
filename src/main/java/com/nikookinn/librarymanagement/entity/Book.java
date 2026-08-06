@@ -15,6 +15,17 @@ import java.util.Set;
 
 @Entity
 @Table(name = "books")
+@NamedEntityGraph(
+    name = "Book.category",
+    attributeNodes = @NamedAttributeNode("category")
+)
+@NamedEntityGraph(
+    name = "Book.authorsAndCategory",
+    attributeNodes = {
+        @NamedAttributeNode("authors"),
+        @NamedAttributeNode("category")
+    }
+)
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
