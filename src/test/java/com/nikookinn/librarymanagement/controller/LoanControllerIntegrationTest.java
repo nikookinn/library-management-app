@@ -78,34 +78,30 @@ class LoanControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should get all loans")
-    void shouldGetAllLoans() throws Exception {
-        // Act & Assert
+    @DisplayName("should get all loans successfully")
+    void shouldGetAllLoansSuccessfully() throws Exception {
         mockMvc.perform(get("/api/loans"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)));
     }
 
     @Test
-    @DisplayName("should get loan by ID")
-    void shouldGetLoanById() throws Exception {
-        // Act & Assert
+    @DisplayName("should get loan by its id")
+    void shouldGetLoanByIdSuccessfully() throws Exception {
         mockMvc.perform(get("/api/loans/{id}", loan.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("ACTIVE"));
     }
 
     @Test
-    @DisplayName("should create loan")
-    void shouldCreateLoan() throws Exception {
-        // Arrange
+    @DisplayName("should create a new loan record")
+    void shouldCreateLoanSuccessfully() throws Exception {
         LoanCreateRequest request = new LoanCreateRequest(
                 member.getId(),
                 book.getId(),
                 LocalDateTime.now().plusDays(20)
         );
 
-        // Act & Assert
         mockMvc.perform(post("/api/loans")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -114,21 +110,18 @@ class LoanControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should return loan")
-    void shouldReturnLoan() throws Exception {
-        // Act & Assert
+    @DisplayName("should mark a loan as returned")
+    void shouldReturnLoanSuccessfully() throws Exception {
         mockMvc.perform(put("/api/loans/{id}/return", loan.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("RETURNED"));
     }
 
     @Test
-    @DisplayName("should update loan")
-    void shouldUpdateLoan() throws Exception {
-        // Arrange
+    @DisplayName("should update loan details")
+    void shouldUpdateLoanSuccessfully() throws Exception {
         LoanUpdateRequest request = new LoanUpdateRequest(LocalDateTime.now().plusDays(30));
 
-        // Act & Assert
         mockMvc.perform(put("/api/loans/{id}", loan.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -137,20 +130,54 @@ class LoanControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should get loans by member")
-    void shouldGetLoansByMember() throws Exception {
-        // Act & Assert
+    @DisplayName("should get loans for a specific member")
+    void shouldGetLoansByMemberSuccessfully() throws Exception {
         mockMvc.perform(get("/api/loans/member/{memberId}", member.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)));
     }
 
     @Test
-    @DisplayName("should get loans by status")
-    void shouldGetLoansByStatus() throws Exception {
-        // Act & Assert
+    @DisplayName("should get loans by their status")
+    void shouldGetLoansByStatusSuccessfully() throws Exception {
         mockMvc.perform(get("/api/loans/status/{status}", LoanStatus.ACTIVE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)));
+    }
+
+    @Test
+    @DisplayName("should get all active loans")
+    void shouldGetActiveLoansSuccessfully() throws Exception {
+        mockMvc.perform(get("/api/loans/active"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)));
+    }
+
+    @Test
+    @DisplayName("should get all overdue loans")
+    void shouldGetOverdueLoansSuccessfully() throws Exception {
+        loan.setStatus(LoanStatus.OVERDUE);
+        loanRepository.save(loan);
+
+        mockMvc.perform(get("/api/loans/overdue"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("should get detailed overdue loan report")
+    void shouldGetOverdueDetailsSuccessfully() throws Exception {
+        loan.setStatus(LoanStatus.OVERDUE);
+        loanRepository.save(loan);
+
+        mockMvc.perform(get("/api/loans/overdue/details"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("should get active loans for a book")
+    void shouldGetActiveLoansByBookSuccessfully() throws Exception {
+        mockMvc.perform(get("/api/loans/book/{bookId}/active", book.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)));
     }
 }

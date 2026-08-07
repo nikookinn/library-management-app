@@ -52,9 +52,8 @@ class MemberControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should get all members")
-    void shouldGetAllMembers() throws Exception {
-        // Act & Assert
+    @DisplayName("should get all library members successfully")
+    void shouldGetAllMembersSuccessfully() throws Exception {
         mockMvc.perform(get("/api/members"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
@@ -62,18 +61,16 @@ class MemberControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should get member by ID")
-    void shouldGetMemberById() throws Exception {
-        // Act & Assert
+    @DisplayName("should get member details by their id")
+    void shouldGetMemberByIdSuccessfully() throws Exception {
         mockMvc.perform(get("/api/members/{id}", member.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.firstName").value("Frodo"));
     }
 
     @Test
-    @DisplayName("should create member")
-    void shouldCreateMember() throws Exception {
-        // Arrange
+    @DisplayName("should create a new library member")
+    void shouldCreateMemberSuccessfully() throws Exception {
         MemberCreateRequest request = new MemberCreateRequest(
                 "Harry",
                 "Potter",
@@ -81,7 +78,6 @@ class MemberControllerIntegrationTest {
                 "123456789"
         );
 
-        // Act & Assert
         mockMvc.perform(post("/api/members")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -90,9 +86,8 @@ class MemberControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should update member")
-    void shouldUpdateMember() throws Exception {
-        // Arrange
+    @DisplayName("should update member information")
+    void shouldUpdateMemberSuccessfully() throws Exception {
         MemberUpdateRequest request = new MemberUpdateRequest(
                 "Frodo Updated",
                 member.getLastName(),
@@ -100,7 +95,6 @@ class MemberControllerIntegrationTest {
                 member.getPhone()
         );
 
-        // Act & Assert
         mockMvc.perform(put("/api/members/{id}", member.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -109,9 +103,8 @@ class MemberControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should delete member")
-    void shouldDeleteMember() throws Exception {
-        // Act & Assert
+    @DisplayName("should delete member from system")
+    void shouldDeleteMemberSuccessfully() throws Exception {
         mockMvc.perform(delete("/api/members/{id}", member.getId()))
                 .andExpect(status().isNoContent());
 

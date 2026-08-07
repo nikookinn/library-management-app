@@ -55,6 +55,7 @@ class BookControllerIntegrationTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        
         author = new Author();
         author.setFirstName("J.R.R.");
         author.setLastName("Tolkien");
@@ -75,9 +76,8 @@ class BookControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should get all books")
-    void shouldGetAllBooks() throws Exception {
-        // Act & Assert
+    @DisplayName("should get all books successfully")
+    void shouldGetAllBooksSuccessfully() throws Exception {
         mockMvc.perform(get("/api/books"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
@@ -85,18 +85,16 @@ class BookControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should get book by ID")
-    void shouldGetBookById() throws Exception {
-        // Act & Assert
+    @DisplayName("should get book by its id")
+    void shouldGetBookByIdSuccessfully() throws Exception {
         mockMvc.perform(get("/api/books/{id}", book.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("The Fellowship of the Ring"));
     }
 
     @Test
-    @DisplayName("should create book")
-    void shouldCreateBook() throws Exception {
-        // Arrange
+    @DisplayName("should create a new book")
+    void shouldCreateBookSuccessfully() throws Exception {
         BookCreateRequest request = new BookCreateRequest(
                 "The Hobbit",
                 "978-0547928227",
@@ -106,7 +104,6 @@ class BookControllerIntegrationTest {
                 category.getId()
         );
 
-        // Act & Assert
         mockMvc.perform(post("/api/books")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -115,9 +112,8 @@ class BookControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should update book")
-    void shouldUpdateBook() throws Exception {
-        // Arrange
+    @DisplayName("should update book information")
+    void shouldUpdateBookSuccessfully() throws Exception {
         BookUpdateRequest request = new BookUpdateRequest(
                 "The Fellowship of the Ring Updated",
                 book.getIsbn(),
@@ -127,7 +123,6 @@ class BookControllerIntegrationTest {
                 category.getId()
         );
 
-        // Act & Assert
         mockMvc.perform(put("/api/books/{id}", book.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -136,9 +131,8 @@ class BookControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should delete book")
-    void shouldDeleteBook() throws Exception {
-        // Act & Assert
+    @DisplayName("should delete book from system")
+    void shouldDeleteBookSuccessfully() throws Exception {
         mockMvc.perform(delete("/api/books/{id}", book.getId()))
                 .andExpect(status().isNoContent());
 
@@ -147,13 +141,63 @@ class BookControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should search books")
-    void shouldSearchBooks() throws Exception {
-        // Act & Assert
+    @DisplayName("should search books by title")
+    void shouldSearchBooksSuccessfully() throws Exception {
         mockMvc.perform(get("/api/books/search").param("query", "fellowship"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].title").value("The Fellowship of the Ring"));
+    }
+
+    @Test
+    @DisplayName("should search books with dynamic filters")
+    void shouldSearchBooksDynamicSuccessfully() throws Exception {
+        mockMvc.perform(get("/api/books/search/dynamic")
+                        .param("title", "Fellowship")
+                        .param("authorName", "Tolkien"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)));
+    }
+
+    @Test
+    @DisplayName("should get all available books")
+    void shouldGetAvailableBooksSuccessfully() throws Exception {
+        mockMvc.perform(get("/api/books/available"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)));
+    }
+
+    @Test
+    @DisplayName("should add an author to a book")
+    void shouldAddAuthorToBookSuccessfully() throws Exception {
+        Author newAuthor = new Author();
+        newAuthor.setFirstName("New");
+        newAuthor.setLastName("Author");
+        newAuthor = authorRepository.save(newAuthor);
+
+        mockMvc.perform(post("/api/books/{bookId}/authors/{authorId}", book.getId(), newAuthor.getId()))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("should get most borrowed books list")
+    void shouldGetMostBorrowedBooksSuccessfully() throws Exception {
+        mockMvc.perform(get("/api/books/most-borrowed"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("should get top book categories")
+    void shouldGetTopCategoriesSuccessfully() throws Exception {
+        mockMvc.perform(get("/api/books/top-categories"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("should get never borrowed books list")
+    void shouldGetNeverBorrowedBooksSuccessfully() throws Exception {
+        mockMvc.perform(get("/api/books/never-borrowed"))
+                .andExpect(status().isOk());
     }
 }
 

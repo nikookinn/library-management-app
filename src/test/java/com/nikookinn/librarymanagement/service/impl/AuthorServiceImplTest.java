@@ -67,7 +67,7 @@ class AuthorServiceImplTest {
 
             // Assert
             assertThat(result.getContent()).hasSize(1);
-            assertThat(result.getContent().get(0).firstName()).isEqualTo("J.R.R.");
+            assertThat(result.getContent().getFirst().firstName()).isEqualTo("J.R.R.");
             verify(authorRepository).findAll(pageable);
         }
     }

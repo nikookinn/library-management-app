@@ -53,9 +53,8 @@ class AuthorControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should get all authors")
-    void shouldGetAllAuthors() throws Exception {
-        // Act & Assert
+    @DisplayName("should get all authors successfully")
+    void shouldGetAllAuthorsSuccessfully() throws Exception {
         mockMvc.perform(get("/api/authors"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
@@ -63,18 +62,16 @@ class AuthorControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should get author by ID")
-    void shouldGetAuthorById() throws Exception {
-        // Act & Assert
+    @DisplayName("should get author by their id")
+    void shouldGetAuthorByIdSuccessfully() throws Exception {
         mockMvc.perform(get("/api/authors/{id}", author.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.firstName").value("J.R.R."));
     }
 
     @Test
-    @DisplayName("should create author")
-    void shouldCreateAuthor() throws Exception {
-        // Arrange
+    @DisplayName("should create a new author")
+    void shouldCreateAuthorSuccessfully() throws Exception {
         AuthorCreateRequest request = new AuthorCreateRequest(
                 "J.K.",
                 "Rowling",
@@ -83,7 +80,6 @@ class AuthorControllerIntegrationTest {
                 "Author of Harry Potter"
         );
 
-        // Act & Assert
         mockMvc.perform(post("/api/authors")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -93,9 +89,8 @@ class AuthorControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should update author")
-    void shouldUpdateAuthor() throws Exception {
-        // Arrange
+    @DisplayName("should update author information")
+    void shouldUpdateAuthorSuccessfully() throws Exception {
         AuthorUpdateRequest request = new AuthorUpdateRequest(
                 "J.R.R. Updated",
                 "Tolkien Updated",
@@ -104,7 +99,6 @@ class AuthorControllerIntegrationTest {
                 author.getBiography()
         );
 
-        // Act & Assert
         mockMvc.perform(put("/api/authors/{id}", author.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -113,9 +107,8 @@ class AuthorControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should delete author")
-    void shouldDeleteAuthor() throws Exception {
-        // Act & Assert
+    @DisplayName("should delete author from system")
+    void shouldDeleteAuthorSuccessfully() throws Exception {
         mockMvc.perform(delete("/api/authors/{id}", author.getId()))
                 .andExpect(status().isNoContent());
 
@@ -124,9 +117,8 @@ class AuthorControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should search authors")
-    void shouldSearchAuthors() throws Exception {
-        // Act & Assert
+    @DisplayName("should search authors by name")
+    void shouldSearchAuthorsSuccessfully() throws Exception {
         mockMvc.perform(get("/api/authors/search").param("name", "tolkien"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))

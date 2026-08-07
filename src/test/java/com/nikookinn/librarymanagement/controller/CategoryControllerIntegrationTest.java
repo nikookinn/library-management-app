@@ -22,7 +22,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @Transactional
-@DisplayName("Category Controller Integration Tests")
 class CategoryControllerIntegrationTest {
 
     private MockMvc mockMvc;
@@ -47,9 +46,7 @@ class CategoryControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should get all categories")
-    void shouldGetAllCategories() throws Exception {
-        // Act & Assert
+    void getAllCategories_Success() throws Exception {
         mockMvc.perform(get("/api/categories"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
@@ -57,21 +54,16 @@ class CategoryControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should get category by ID")
-    void shouldGetCategoryById() throws Exception {
-        // Act & Assert
+    void getCategoryById_Success() throws Exception {
         mockMvc.perform(get("/api/categories/{id}", category.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Fantasy"));
     }
 
     @Test
-    @DisplayName("should create category")
-    void shouldCreateCategory() throws Exception {
-        // Arrange
+    void createCategory_Success() throws Exception {
         CategoryCreateRequest request = new CategoryCreateRequest("Adventure", "Adventure description");
 
-        // Act & Assert
         mockMvc.perform(post("/api/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -80,12 +72,9 @@ class CategoryControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should update category")
-    void shouldUpdateCategory() throws Exception {
-        // Arrange
+    void updateCategory_Success() throws Exception {
         CategoryUpdateRequest request = new CategoryUpdateRequest("Fantasy Updated", "Updated description");
 
-        // Act & Assert
         mockMvc.perform(put("/api/categories/{id}", category.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -94,9 +83,7 @@ class CategoryControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("should delete category")
-    void shouldDeleteCategory() throws Exception {
-        // Act & Assert
+    void deleteCategory_Success() throws Exception {
         mockMvc.perform(delete("/api/categories/{id}", category.getId()))
                 .andExpect(status().isNoContent());
 
