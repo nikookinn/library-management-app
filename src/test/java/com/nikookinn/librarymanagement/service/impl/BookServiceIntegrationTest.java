@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,6 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
+@ActiveProfiles("dev")
 @DisplayName("Book Service Integration Tests")
 class BookServiceIntegrationTest {
 
@@ -321,5 +324,64 @@ class BookServiceIntegrationTest {
         bookService.getBooksNeverBorrowed();
 
         verify(bookRepository, times(1)).findBooksNeverBorrowed();
+    }
+
+    @Test
+    @DisplayName("should upload cover image and evict cache")
+    void shouldUploadCoverAndEvictCache() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "cover.jpg", "image/jpeg", "content".getBytes());
+
+        bookService.getBookById(book.getId());
+        assertThat(cacheManager.getCache("books").get(book.getId())).isNotNull();
+
+        bookService.uploadCoverImage(book.getId(), file);
+
+        assertThat(cacheManager.getCache("books").get(book.getId())).isNull();
+        Book updatedBook = bookRepository.findById(book.getId()).orElseThrow();
+        assertThat(updatedBook.getCoverImage()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("should fail to upload file larger than 5MB")
+    void shouldFailLargeFileUpload() {
+        byte[] largeContent = new byte[5 * 1024 * 1024 + 1];
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "large.jpg", "image/jpeg", largeContent);
+
+        assertThatThrownBy(() -> bookService.uploadCoverImage(book.getId(), file))
+                .isInstanceOf(com.nikookinn.librarymanagement.exception.BusinessRuleViolationException.class)
+                .hasMessage("File size exceeds 5MB limit");
+    }
+
+    @Test
+    @DisplayName("should delete cover image successfully")
+    void shouldDeleteCoverImageSuccessfully() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "cover.jpg", "image/jpeg", "content".getBytes());
+        bookService.uploadCoverImage(book.getId(), file);
+        
+        bookService.deleteCoverImage(book.getId());
+
+        Book updatedBook = bookRepository.findById(book.getId()).orElseThrow();
+        assertThat(updatedBook.getCoverImage()).isNull();
+    }
+
+    @Test
+    @DisplayName("should overwrite existing cover image successfully")
+    void shouldOverwriteExistingCover() {
+        MockMultipartFile file1 = new MockMultipartFile(
+                "file", "cover1.jpg", "image/jpeg", "content1".getBytes());
+        bookService.uploadCoverImage(book.getId(), file1);
+        Book bookWithFirstCover = bookRepository.findById(book.getId()).orElseThrow();
+        String firstCoverName = bookWithFirstCover.getCoverImage();
+
+        MockMultipartFile file2 = new MockMultipartFile(
+                "file", "cover2.jpg", "image/jpeg", "content2".getBytes());
+        bookService.uploadCoverImage(book.getId(), file2);
+
+        Book bookWithSecondCover = bookRepository.findById(book.getId()).orElseThrow();
+        assertThat(bookWithSecondCover.getCoverImage()).isNotEqualTo(firstCoverName);
+        assertThat(bookService.getCoverImage(book.getId())).isEqualTo("content2".getBytes());
     }
 }

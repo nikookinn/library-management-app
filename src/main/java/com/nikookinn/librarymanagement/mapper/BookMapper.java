@@ -10,6 +10,7 @@ public final class BookMapper {
     public static BookResponse toResponse(Book book) {
         return new BookResponse(book.getId(), book.getTitle(), book.getIsbn(), book.getPublishYear(),
                 book.getDescription(), book.getTotalCopies(), book.getAvailableCopies(),
-                book.getCategory() != null ? book.getCategory().getId() : null);
+                book.getCategory() != null ? book.getCategory().getId() : null,
+                book.getCoverImage());
     }
 }

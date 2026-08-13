@@ -13,8 +13,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -159,5 +161,28 @@ public class BookController implements BookApi {
     public ResponseEntity<List<BookLoanStatsResponse>> getMostBorrowedBooks(
             @RequestParam(defaultValue = "5") int limit) {
         return ResponseEntity.ok(bookService.getMostBorrowedBooks(limit));
+    }
+
+    @Override
+    @PostMapping(value = "/{id}/cover", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<BookResponse> uploadCoverImage(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) {
+        BookResponse updated = bookService.uploadCoverImage(id, file);
+        return ResponseEntity.ok(updated);
+    }
+
+    @Override
+    @GetMapping(value = "/{id}/cover", produces = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE})
+    public ResponseEntity<byte[]> downloadCoverImage(@PathVariable Long id) {
+        byte[] image = bookService.getCoverImage(id);
+        return ResponseEntity.ok(image);
+    }
+
+    @Override
+    @DeleteMapping("/{id}/cover")
+    public ResponseEntity<Void> deleteCoverImage(@PathVariable Long id) {
+        bookService.deleteCoverImage(id);
+        return ResponseEntity.noContent().build();
     }
 }

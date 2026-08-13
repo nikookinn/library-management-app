@@ -12,8 +12,10 @@ jwt:
 
 app:
   admin:
-    email: ${INITIAL_ADMIN_EMAIL}
-    password: ${INITIAL_ADMIN_PASSWORD}
+    email: ${INITIAL_ADMIN_EMAIL:admin@admin.com}
+    password: ${INITIAL_ADMIN_PASSWORD:admin}
+  upload:
+    dir: ${UPLOAD_DIR:uploads}
 
 ---
 spring:

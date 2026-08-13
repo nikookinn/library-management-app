@@ -83,4 +83,13 @@ public interface BookApi {
 
     @Operation(summary = "Get most borrowed books")
     ResponseEntity<List<BookLoanStatsResponse>> getMostBorrowedBooks(int limit);
+
+    @Operation(summary = "Upload book cover image")
+    ResponseEntity<BookResponse> uploadCoverImage(Long id, org.springframework.web.multipart.MultipartFile file);
+
+    @Operation(summary = "Download book cover image")
+    ResponseEntity<byte[]> downloadCoverImage(Long id);
+
+    @Operation(summary = "Delete book cover image")
+    ResponseEntity<Void> deleteCoverImage(Long id);
 }

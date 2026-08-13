@@ -8,6 +8,7 @@ import com.nikookinn.librarymanagement.dto.response.CategoryStatsResponse;
 import com.nikookinn.librarymanagement.dto.response.BookLoanStatsResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -32,4 +33,8 @@ public interface BookService {
     List<BookResponse> getAvailableBooksWithDetails(Pageable pageable);
     List<BookResponse> getBooksByCategoryAndAvailability(Long categoryId, int minCopies);
     List<BookLoanStatsResponse> getMostBorrowedBooks(int limit);
+    
+    BookResponse uploadCoverImage(Long id, MultipartFile file);
+    byte[] getCoverImage(Long id);
+    void deleteCoverImage(Long id);
 }

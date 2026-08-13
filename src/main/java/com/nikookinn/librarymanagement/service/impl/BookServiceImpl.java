@@ -19,12 +19,14 @@ import com.nikookinn.librarymanagement.repository.CategoryRepository;
 import com.nikookinn.librarymanagement.repository.LoanRepository;
 import com.nikookinn.librarymanagement.repository.specification.BookSpecification;
 import com.nikookinn.librarymanagement.service.BookService;
+import com.nikookinn.librarymanagement.service.FileService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashSet;
 import java.util.List;
@@ -37,13 +39,16 @@ public class BookServiceImpl implements BookService {
     private final CategoryRepository categoryRepository;
     private final AuthorRepository authorRepository;
     private final LoanRepository loanRepository;
+    private final FileService fileService;
 
     public BookServiceImpl(BookRepository bookRepository, CategoryRepository categoryRepository,
-                           AuthorRepository authorRepository, LoanRepository loanRepository) {
+                           AuthorRepository authorRepository, LoanRepository loanRepository,
+                           FileService fileService) {
         this.bookRepository = bookRepository;
         this.categoryRepository = categoryRepository;
         this.authorRepository = authorRepository;
         this.loanRepository = loanRepository;
+        this.fileService = fileService;
     }
 
     @Override
@@ -240,4 +245,56 @@ public class BookServiceImpl implements BookService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional
+    @CacheEvict(value = "books", allEntries = true)
+    public BookResponse uploadCoverImage(Long id, MultipartFile file) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + id));
+
+        // Validation
+        if (file.getSize() > 5 * 1024 * 1024) {
+            throw new BusinessRuleViolationException("File size exceeds 5MB limit");
+        }
+        String contentType = file.getContentType();
+        if (contentType == null || (!contentType.equals("image/jpeg") && !contentType.equals("image/png"))) {
+            throw new BusinessRuleViolationException("Only JPG and PNG images are allowed");
+        }
+
+        // Delete old cover if exists
+        if (book.getCoverImage() != null) {
+            fileService.deleteFile(book.getCoverImage(), "covers");
+        }
+
+        String fileName = fileService.saveFile(file, "covers");
+        book.setCoverImage(fileName);
+        Book saved = bookRepository.save(book);
+        return BookMapper.toResponse(saved);
+    }
+
+    @Override
+    public byte[] getCoverImage(Long id) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + id));
+        
+        if (book.getCoverImage() == null) {
+            throw new ResourceNotFoundException("Book cover image not found for id: " + id);
+        }
+
+        return fileService.loadFile(book.getCoverImage(), "covers");
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(value = "books", allEntries = true)
+    public void deleteCoverImage(Long id) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + id));
+
+        if (book.getCoverImage() != null) {
+            fileService.deleteFile(book.getCoverImage(), "covers");
+            book.setCoverImage(null);
+            bookRepository.save(book);
+        }
+    }
 }

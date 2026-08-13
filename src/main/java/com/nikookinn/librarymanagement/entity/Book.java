@@ -70,6 +70,9 @@ public class Book {
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Loan> loans = new ArrayList<>();
 
+    @Column(name = "cover_image")
+    private String coverImage;
+
     @Version
     private Long version;
 
@@ -213,6 +216,14 @@ public class Book {
 
     List<Loan> internalGetLoans() {
         return loans;
+    }
+
+    public String getCoverImage() {
+        return coverImage;
+    }
+
+    public void setCoverImage(String coverImage) {
+        this.coverImage = coverImage;
     }
 
     @Override
