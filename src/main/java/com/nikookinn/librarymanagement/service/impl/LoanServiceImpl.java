@@ -41,14 +41,12 @@ public class LoanServiceImpl implements LoanService {
     @Override
     @Transactional
     public Page<LoanResponse> getAllLoans(Pageable pageable) {
-        markOverdueLoans();
         return loanRepository.findAll(pageable).map(LoanMapper::toResponse);
     }
 
     @Override
     @Transactional
     public LoanResponse getLoanById(Long id) {
-        markOverdueLoans();
         return loanRepository.findById(id)
                 .map(LoanMapper::toResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Loan not found with id: " + id));
@@ -82,7 +80,6 @@ public class LoanServiceImpl implements LoanService {
     @Override
     @Transactional
     public LoanResponse updateLoan(Long id, LoanUpdateRequest request) {
-        markOverdueLoans();
         Loan loan = loanRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Loan not found with id: " + id));
 
@@ -109,7 +106,6 @@ public class LoanServiceImpl implements LoanService {
     @Override
     @Transactional
     public Page<LoanResponse> getLoansByMember(Long memberId, Pageable pageable) {
-        markOverdueLoans();
         memberRepository.findById(memberId)
                 .orElseThrow(() -> new ResourceNotFoundException("Member not found with id: " + memberId));
         return loanRepository.findByMember_Id(memberId, pageable).map(LoanMapper::toResponse);
@@ -118,21 +114,18 @@ public class LoanServiceImpl implements LoanService {
     @Override
     @Transactional
     public Page<LoanResponse> getLoansByStatus(LoanStatus status, Pageable pageable) {
-        markOverdueLoans();
         return loanRepository.findByStatus(status, pageable).map(LoanMapper::toResponse);
     }
 
     @Override
     @Transactional
     public Page<LoanResponse> getActiveLoan(Pageable pageable) {
-        markOverdueLoans();
         return loanRepository.findByStatus(LoanStatus.ACTIVE, pageable).map(LoanMapper::toResponse);
     }
 
     @Override
     @Transactional
     public Page<LoanResponse> getOverdueLoans(Pageable pageable) {
-        markOverdueLoans();
         return loanRepository.findByStatus(LoanStatus.OVERDUE, pageable).map(LoanMapper::toResponse);
     }
 
@@ -140,7 +133,6 @@ public class LoanServiceImpl implements LoanService {
     @Transactional
     @CacheEvict(value = "books", allEntries = true)
     public LoanResponse returnLoan(Long loanId) {
-        markOverdueLoans();
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(() -> new ResourceNotFoundException("Loan not found with id: " + loanId));
         if (loan.getStatus() == LoanStatus.RETURNED) {
@@ -163,7 +155,6 @@ public class LoanServiceImpl implements LoanService {
     @Override
     @Transactional(readOnly = true)
     public List<OverdueLoanResponse> getOverdueDetails() {
-        markOverdueLoans();
         LocalDateTime now = LocalDateTime.now();
         return loanRepository.findOverdueDetails().stream()
                 .map(d -> new OverdueLoanResponse(
@@ -201,7 +192,4 @@ public class LoanServiceImpl implements LoanService {
                 .collect(Collectors.toList());
     }
 
-    private void markOverdueLoans() {
-        loanRepository.markOverdueLoans(LocalDateTime.now());
-    }
 }
