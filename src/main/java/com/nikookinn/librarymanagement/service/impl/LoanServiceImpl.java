@@ -15,6 +15,7 @@ import com.nikookinn.librarymanagement.repository.BookRepository;
 import com.nikookinn.librarymanagement.repository.LoanRepository;
 import com.nikookinn.librarymanagement.repository.MemberRepository;
 import com.nikookinn.librarymanagement.service.LoanService;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -55,6 +56,7 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "books", allEntries = true)
     public LoanResponse createLoan(LoanCreateRequest request) {
         Book book = bookRepository.findById(request.bookId())
                 .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + request.bookId()));
@@ -136,6 +138,7 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "books", allEntries = true)
     public LoanResponse returnLoan(Long loanId) {
         markOverdueLoans();
         Loan loan = loanRepository.findById(loanId)

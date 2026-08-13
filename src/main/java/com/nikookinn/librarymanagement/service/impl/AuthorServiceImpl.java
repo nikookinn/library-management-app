@@ -9,6 +9,8 @@ import com.nikookinn.librarymanagement.exception.ResourceNotFoundException;
 import com.nikookinn.librarymanagement.mapper.AuthorMapper;
 import com.nikookinn.librarymanagement.repository.AuthorRepository;
 import com.nikookinn.librarymanagement.service.AuthorService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,12 +29,14 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
+    @Cacheable(value = "authors", key = "#pageable")
     public Page<AuthorResponse> getAllAuthors(Pageable pageable) {
         return authorRepository.findAll(pageable)
                 .map(AuthorMapper::toResponse);
     }
 
     @Override
+    @Cacheable(value = "authors", key = "#id")
     public AuthorResponse getAuthorById(Long id) {
         return authorRepository.findById(id)
                 .map(AuthorMapper::toResponse)
@@ -41,6 +45,7 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "authors", allEntries = true)
     public AuthorResponse createAuthor(AuthorCreateRequest request) {
         Author author = new Author();
         author.setFirstName(request.firstName());
@@ -55,6 +60,7 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "authors", allEntries = true)
     public AuthorResponse updateAuthor(Long id, AuthorUpdateRequest request) {
         Author author = authorRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Author not found with id: " + id));
@@ -71,6 +77,7 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "authors", allEntries = true)
     public void deleteAuthor(Long id) {
         if (!authorRepository.existsById(id)) {
             throw new ResourceNotFoundException("Author not found with id: " + id);

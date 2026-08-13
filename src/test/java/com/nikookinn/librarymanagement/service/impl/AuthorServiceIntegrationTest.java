@@ -10,6 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.CacheManager;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.time.LocalDate;
@@ -17,7 +18,7 @@ import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @DisplayName("Author Service Integration Tests")
@@ -29,8 +30,16 @@ class AuthorServiceIntegrationTest {
     @MockitoSpyBean
     private AuthorRepository authorRepository;
 
+    @Autowired
+    private CacheManager cacheManager;
+
     @BeforeEach
     void setUp() {
+        cacheManager.getCacheNames().forEach(name -> {
+            var cache = cacheManager.getCache(name);
+            if (cache != null) cache.clear();
+        });
+
         authorRepository.deleteAll();
     }
 
@@ -80,5 +89,79 @@ class AuthorServiceIntegrationTest {
                 .isInstanceOf(RuntimeException.class);
 
         assertThat(authorRepository.existsById(authorToDelete.getId())).isTrue();
+    }
+
+    @Test
+    @DisplayName("should cache author by id and not call repository twice")
+    void shouldCacheAuthorById() {
+        Author author = new Author();
+        author.setFirstName("John");
+        author.setLastName("Doe");
+        Author saved = authorRepository.save(author);
+        reset(authorRepository);
+
+        authorService.getAuthorById(saved.getId());
+        authorService.getAuthorById(saved.getId());
+
+        verify(authorRepository, times(1)).findById(saved.getId());
+    }
+
+    @Test
+    @DisplayName("should cache all authors pageable")
+    void shouldCacheGetAllAuthors() {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 10);
+        
+        authorService.getAllAuthors(pageable);
+        authorService.getAllAuthors(pageable);
+
+        verify(authorRepository, times(1)).findAll(pageable);
+    }
+
+    @Test
+    @DisplayName("should evict all entries in authors cache when new author is created")
+    void shouldEvictCacheOnCreate() {
+        Author author = new Author();
+        author.setFirstName("Existing");
+        author.setLastName("Author");
+        Author saved = authorRepository.save(author);
+
+        authorService.getAuthorById(saved.getId());
+        assertThat(cacheManager.getCache("authors").get(saved.getId())).isNotNull();
+
+        authorService.createAuthor(new AuthorCreateRequest("New", "Author", null, "Turk", "Bio"));
+
+        assertThat(cacheManager.getCache("authors").get(saved.getId())).isNull();
+    }
+
+    @Test
+    @DisplayName("should evict author cache when author is updated")
+    void shouldEvictCacheOnUpdate() {
+        Author author = new Author();
+        author.setFirstName("Old");
+        author.setLastName("Name");
+        Author saved = authorRepository.save(author);
+
+        authorService.getAuthorById(saved.getId());
+        assertThat(cacheManager.getCache("authors").get(saved.getId())).isNotNull();
+
+        authorService.updateAuthor(saved.getId(), new AuthorUpdateRequest("New", "Name", LocalDate.now(), "Bio", "Info"));
+
+        assertThat(cacheManager.getCache("authors").get(saved.getId())).isNull();
+    }
+
+    @Test
+    @DisplayName("should evict all entries in authors cache when author is deleted")
+    void shouldEvictCacheOnDelete() {
+        Author author = new Author();
+        author.setFirstName("To Be");
+        author.setLastName("Deleted");
+        Author saved = authorRepository.save(author);
+
+        authorService.getAuthorById(saved.getId());
+        assertThat(cacheManager.getCache("authors").get(saved.getId())).isNotNull();
+
+        authorService.deleteAuthor(saved.getId());
+
+        assertThat(cacheManager.getCache("authors").get(saved.getId())).isNull();
     }
 }

@@ -12,6 +12,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.CacheManager;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.time.LocalDate;
@@ -41,11 +42,19 @@ class LoanServiceIntegrationTest {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Autowired
+    private CacheManager cacheManager;
+
     private Book book;
     private Member member;
 
     @BeforeEach
     void setUp() {
+        cacheManager.getCacheNames().forEach(name -> {
+            var cache = cacheManager.getCache(name);
+            if (cache != null) cache.clear();
+        });
+
         loanRepository.deleteAll();
         bookRepository.deleteAll();
         memberRepository.deleteAll();
@@ -110,5 +119,44 @@ class LoanServiceIntegrationTest {
         
         Loan currentLoan = loanRepository.findById(savedLoan.getId()).orElseThrow();
         assertThat(currentLoan.getStatus()).isEqualTo(LoanStatus.ACTIVE);
+    }
+
+    @Test
+    @DisplayName("should evict book cache when new loan is created")
+    void shouldEvictBookCacheOnLoanCreate() {
+        // Fill cache
+        cacheManager.getCache("books").put(book.getId(), "Cached Book Data");
+        assertThat(cacheManager.getCache("books").get(book.getId())).isNotNull();
+
+        LoanCreateRequest request = new LoanCreateRequest(member.getId(), book.getId(), LocalDateTime.now().plusDays(14));
+        loanService.createLoan(request);
+
+        // Verify book cache is cleared because availableCopies changed
+        assertThat(cacheManager.getCache("books").get(book.getId())).isNull();
+    }
+
+    @Test
+    @DisplayName("should evict book cache when loan is returned")
+    void shouldEvictBookCacheOnLoanReturn() {
+        // Prepare book state: 1 copy is loaned out
+        book.setAvailableCopies(9);
+        bookRepository.save(book);
+
+        Loan loan = new Loan();
+        loan.setBook(book);
+        loan.setMember(member);
+        loan.setBorrowDate(LocalDateTime.now());
+        loan.setDueDate(LocalDateTime.now().plusDays(14));
+        loan.setStatus(LoanStatus.ACTIVE);
+        Loan savedLoan = loanRepository.save(loan);
+
+        // Fill cache
+        cacheManager.getCache("books").put(book.getId(), "Cached Book Data");
+        assertThat(cacheManager.getCache("books").get(book.getId())).isNotNull();
+
+        loanService.returnLoan(savedLoan.getId());
+
+        // Verify book cache is cleared
+        assertThat(cacheManager.getCache("books").get(book.getId())).isNull();
     }
 }

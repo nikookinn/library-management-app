@@ -19,6 +19,8 @@ import com.nikookinn.librarymanagement.repository.CategoryRepository;
 import com.nikookinn.librarymanagement.repository.LoanRepository;
 import com.nikookinn.librarymanagement.repository.specification.BookSpecification;
 import com.nikookinn.librarymanagement.service.BookService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -45,12 +47,14 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Cacheable(value = "books", key = "#pageable")
     public Page<BookResponse> getAllBooks(Pageable pageable) {
         return bookRepository.findAll(pageable)
                 .map(BookMapper::toResponse);
     }
 
     @Override
+    @Cacheable(value = "books", key = "#id")
     public BookResponse getBookById(Long id) {
         return bookRepository.findById(id)
                 .map(BookMapper::toResponse)
@@ -59,6 +63,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "books", allEntries = true)
     public BookResponse createBook(BookCreateRequest request) {
         Category category = categoryRepository.findById(request.categoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + request.categoryId()));
@@ -79,6 +84,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "books", allEntries = true)
     public BookResponse updateBook(Long id, BookUpdateRequest request) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + id));
@@ -107,6 +113,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "books", allEntries = true)
     public void deleteBook(Long id) {
         if (!bookRepository.existsById(id)) {
             throw new ResourceNotFoundException("Book not found with id: " + id);
@@ -115,6 +122,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Cacheable(value = "books", key = "{#categoryId, #pageable}")
     public Page<BookResponse> getBooksByCategory(Long categoryId, Pageable pageable) {
         categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + categoryId));
@@ -124,6 +132,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Cacheable(value = "books", key = "{#authorId, #pageable}")
     public Page<BookResponse> getBooksByAuthor(Long authorId, Pageable pageable) {
         authorRepository.findById(authorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Author not found with id: " + authorId));
@@ -133,18 +142,21 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Cacheable(value = "books", key = "{#query, #pageable}")
     public Page<BookResponse> searchBooks(String query, Pageable pageable) {
         return bookRepository.findByTitleContainingIgnoreCase(query, pageable)
                 .map(BookMapper::toResponse);
     }
 
     @Override
+    @Cacheable(value = "books", key = "{#request, #pageable}")
     public Page<BookResponse> searchBooksDynamic(BookSearchRequest request, Pageable pageable) {
         return bookRepository.findAll(BookSpecification.filterByRequest(request), pageable)
                 .map(BookMapper::toResponse);
     }
 
     @Override
+    @Cacheable(value = "books", key = "#pageable")
     public Page<BookResponse> getAvailableBooks(Pageable pageable) {
         return bookRepository.findByAvailableCopiesGreaterThan(0, pageable)
                 .map(BookMapper::toResponse);
@@ -152,6 +164,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "books", allEntries = true)
     public void addAuthorToBook(Long bookId, Long authorId) {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + bookId));
@@ -165,6 +178,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "books", allEntries = true)
     public void removeAuthorFromBook(Long bookId, Long authorId) {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + bookId));
@@ -177,6 +191,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Cacheable(value = "books")
     public List<BookResponse> getBooksNeverBorrowed() {
         return bookRepository.findBooksNeverBorrowed()
                 .stream()
@@ -185,6 +200,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Cacheable(value = "books")
     public List<CategoryStatsResponse> getTopCategories() {
         return bookRepository.findTopCategoriesByLoans()
                 .stream()
@@ -193,6 +209,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Cacheable(value = "books", key = "#pageable")
     public List<BookResponse> getAvailableBooksWithDetails(Pageable pageable) {
         return bookRepository.findAvailableBooksWithDetails(pageable)
                 .stream()
@@ -201,6 +218,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Cacheable(value = "books", key = "{#categoryId, #minCopies}")
     public List<BookResponse> getBooksByCategoryAndAvailability(Long categoryId, int minCopies) {
         return bookRepository.findByCategoryAndAvailability(categoryId, minCopies)
                 .stream()
@@ -209,6 +227,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Cacheable(value = "books", key = "#limit")
     public List<BookLoanStatsResponse> getMostBorrowedBooks(int limit) {
         return bookRepository.findMostBorrowedBooks(limit)
                 .stream()

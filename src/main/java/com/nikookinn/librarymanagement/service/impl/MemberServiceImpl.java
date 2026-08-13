@@ -8,6 +8,8 @@ import com.nikookinn.librarymanagement.exception.ResourceNotFoundException;
 import com.nikookinn.librarymanagement.mapper.MemberMapper;
 import com.nikookinn.librarymanagement.repository.MemberRepository;
 import com.nikookinn.librarymanagement.service.MemberService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,12 +29,14 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @Cacheable(value = "members", key = "#pageable")
     public Page<MemberResponse> getAllMembers(Pageable pageable) {
         return memberRepository.findAll(pageable)
                 .map(MemberMapper::toResponse);
     }
 
     @Override
+    @Cacheable(value = "members", key = "#id")
     public MemberResponse getMemberById(Long id) {
         return memberRepository.findById(id)
                 .map(MemberMapper::toResponse)
@@ -41,6 +45,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "members", allEntries = true)
     public MemberResponse createMember(MemberCreateRequest request) {
         Member member = new Member();
         member.setFirstName(request.firstName());
@@ -55,6 +60,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "members", allEntries = true)
     public MemberResponse updateMember(Long id, MemberUpdateRequest request) {
         Member member = memberRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Member not found with id: " + id));
@@ -70,6 +76,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "members", allEntries = true)
     public void deleteMember(Long id) {
         if (!memberRepository.existsById(id)) {
             throw new ResourceNotFoundException("Member not found with id: " + id);

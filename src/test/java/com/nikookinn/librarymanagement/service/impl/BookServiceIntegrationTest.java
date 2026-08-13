@@ -14,12 +14,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.CacheManager;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @DisplayName("Book Service Integration Tests")
@@ -31,11 +32,14 @@ class BookServiceIntegrationTest {
     @MockitoSpyBean
     private BookRepository bookRepository;
 
-    @Autowired
+    @MockitoSpyBean
     private CategoryRepository categoryRepository;
+    
+    @MockitoSpyBean
+    private AuthorRepository authorRepository;
 
     @Autowired
-    private AuthorRepository authorRepository;
+    private CacheManager cacheManager;
 
     @Autowired
     private jakarta.persistence.EntityManager entityManager;
@@ -45,6 +49,11 @@ class BookServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        cacheManager.getCacheNames().forEach(name -> {
+            var cache = cacheManager.getCache(name);
+            if (cache != null) cache.clear();
+        });
+
         bookRepository.deleteAll();
         categoryRepository.deleteAll();
         authorRepository.deleteAll();
@@ -108,5 +117,209 @@ class BookServiceIntegrationTest {
                 .setParameter(1, book.getId())
                 .getSingleResult();
         assertThat(count.intValue()).isZero();
+    }
+
+    @Test
+    @DisplayName("should cache book by id and not call repository twice")
+    void shouldCacheBookById() {
+        // First call - should hit repository
+        bookService.getBookById(book.getId());
+
+        // Second call - should hit cache
+        bookService.getBookById(book.getId());
+
+        // Verify repository was called exactly once for findById
+        verify(bookRepository, times(1)).findById(book.getId());
+    }
+
+    @Test
+    @DisplayName("should cache all books pageable")
+    void shouldCacheGetAllBooks() {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 10);
+        
+        bookService.getAllBooks(pageable);
+        bookService.getAllBooks(pageable);
+
+        verify(bookRepository, times(1)).findAll(pageable);
+    }
+
+    @Test
+    @DisplayName("should evict all entries in books cache when new book is created")
+    void shouldEvictCacheOnCreate() {
+        // Populating cache
+        bookService.getBookById(book.getId());
+        assertThat(cacheManager.getCache("books").get(book.getId())).isNotNull();
+
+        BookCreateRequest request = new BookCreateRequest("Fresh Book", "FreshISBN", 2024, "Desc", 3, category.getId());
+        bookService.createBook(request);
+
+        // All entries should be gone, including our previously cached book
+        assertThat(cacheManager.getCache("books").get(book.getId())).isNull();
+    }
+
+    @Test
+    @DisplayName("should evict all entries in books cache when book is updated")
+    void shouldEvictCacheOnUpdate() {
+        bookService.getBookById(book.getId());
+        assertThat(cacheManager.getCache("books").get(book.getId())).isNotNull();
+
+        BookUpdateRequest request = new BookUpdateRequest("Updated", "ISBN1", 2020, "D", 10, category.getId());
+        bookService.updateBook(book.getId(), request);
+
+        assertThat(cacheManager.getCache("books").get(book.getId())).isNull();
+    }
+
+    @Test
+    @DisplayName("should evict book cache when book is deleted")
+    void shouldEvictCacheOnDelete() {
+        // Fill cache
+        bookService.getBookById(book.getId());
+        assertThat(cacheManager.getCache("books").get(book.getId())).isNotNull();
+
+        // Delete book - should evict
+        bookService.deleteBook(book.getId());
+
+        // Verify cache is empty
+        assertThat(cacheManager.getCache("books").get(book.getId())).isNull();
+    }
+
+    @Test
+    @DisplayName("should cache search results")
+    void shouldCacheSearchResults() {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 10);
+        String query = "Original";
+
+        bookService.searchBooks(query, pageable);
+        bookService.searchBooks(query, pageable);
+
+        verify(bookRepository, times(1)).findByTitleContainingIgnoreCase(query, pageable);
+    }
+
+    @Test
+    @DisplayName("should cache top categories statistics")
+    void shouldCacheTopCategories() {
+        bookService.getTopCategories();
+        bookService.getTopCategories();
+
+        verify(bookRepository, times(1)).findTopCategoriesByLoans();
+    }
+
+    @Test
+    @DisplayName("should cache most borrowed books report")
+    void shouldCacheMostBorrowedBooks() {
+        int limit = 5;
+        bookService.getMostBorrowedBooks(limit);
+        bookService.getMostBorrowedBooks(limit);
+
+        verify(bookRepository, times(1)).findMostBorrowedBooks(limit);
+    }
+
+    @Test
+    @DisplayName("should cache books by category")
+    void shouldCacheGetBooksByCategory() {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 10);
+        bookService.getBooksByCategory(category.getId(), pageable);
+        bookService.getBooksByCategory(category.getId(), pageable);
+
+        verify(bookRepository, times(1)).findByCategory_Id(category.getId(), pageable);
+    }
+
+    @Test
+    @DisplayName("should cache available books")
+    void shouldCacheGetAvailableBooks() {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 10);
+        bookService.getAvailableBooks(pageable);
+        bookService.getAvailableBooks(pageable);
+
+        verify(bookRepository, times(1)).findByAvailableCopiesGreaterThan(0, pageable);
+    }
+
+    @Test
+    @DisplayName("should evict cache when author is removed from book")
+    void shouldEvictCacheOnRemoveAuthor() {
+        Author author = new Author();
+        author.setFirstName("To Remove");
+        author.setLastName("Author");
+        Author savedAuthor = authorRepository.save(author);
+        bookService.addAuthorToBook(book.getId(), savedAuthor.getId());
+        
+        bookService.getBookById(book.getId());
+        assertThat(cacheManager.getCache("books").get(book.getId())).isNotNull();
+
+        bookService.removeAuthorFromBook(book.getId(), savedAuthor.getId());
+
+        assertThat(cacheManager.getCache("books").get(book.getId())).isNull();
+    }
+
+    @Test
+    @DisplayName("should evict cache when author is added to book")
+    void shouldEvictCacheOnAddAuthor() {
+        Author author = new Author();
+        author.setFirstName("New");
+        author.setLastName("Author");
+        Author savedAuthor = authorRepository.save(author);
+
+        bookService.getBookById(book.getId());
+        assertThat(cacheManager.getCache("books").get(book.getId())).isNotNull();
+
+        bookService.addAuthorToBook(book.getId(), savedAuthor.getId());
+
+        assertThat(cacheManager.getCache("books").get(book.getId())).isNull();
+    }
+    @Test
+    @DisplayName("should cache books by author")
+    void shouldCacheGetBooksByAuthor() {
+        Author author = new Author();
+        author.setFirstName("Writer");
+        author.setLastName("One");
+        Author savedAuthor = authorRepository.save(author);
+
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 10);
+        bookService.getBooksByAuthor(savedAuthor.getId(), pageable);
+        bookService.getBooksByAuthor(savedAuthor.getId(), pageable);
+
+        verify(authorRepository, times(1)).findById(savedAuthor.getId());
+        verify(bookRepository, times(1)).findByAuthor_Id(savedAuthor.getId(), pageable);
+    }
+
+    @Test
+    @DisplayName("should cache dynamic search results")
+    void shouldCacheSearchBooksDynamic() {
+        com.nikookinn.librarymanagement.dto.request.BookSearchRequest request = 
+            new com.nikookinn.librarymanagement.dto.request.BookSearchRequest("Original", null, null, null, null, null);
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 10);
+
+        bookService.searchBooksDynamic(request, pageable);
+        bookService.searchBooksDynamic(request, pageable);
+
+        verify(bookRepository, times(1)).findAll(any(org.springframework.data.jpa.domain.Specification.class), eq(pageable));
+    }
+
+    @Test
+    @DisplayName("should cache available books with details")
+    void shouldCacheGetAvailableBooksWithDetails() {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, 10);
+        bookService.getAvailableBooksWithDetails(pageable);
+        bookService.getAvailableBooksWithDetails(pageable);
+
+        verify(bookRepository, times(1)).findAvailableBooksWithDetails(pageable);
+    }
+
+    @Test
+    @DisplayName("should cache books by category and availability")
+    void shouldCacheGetBooksByCategoryAndAvailability() {
+        bookService.getBooksByCategoryAndAvailability(category.getId(), 1);
+        bookService.getBooksByCategoryAndAvailability(category.getId(), 1);
+
+        verify(bookRepository, times(1)).findByCategoryAndAvailability(category.getId(), 1);
+    }
+
+    @Test
+    @DisplayName("should cache books never borrowed")
+    void shouldCacheGetBooksNeverBorrowed() {
+        bookService.getBooksNeverBorrowed();
+        bookService.getBooksNeverBorrowed();
+
+        verify(bookRepository, times(1)).findBooksNeverBorrowed();
     }
 }
