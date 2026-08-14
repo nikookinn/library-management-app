@@ -9,16 +9,21 @@ import com.nikookinn.librarymanagement.repository.BookRepository;
 import com.nikookinn.librarymanagement.repository.CategoryRepository;
 import com.nikookinn.librarymanagement.repository.LoanRepository;
 import com.nikookinn.librarymanagement.repository.MemberRepository;
+import com.nikookinn.librarymanagement.service.EmailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 @Transactional
@@ -39,6 +44,9 @@ class LoanTaskServiceIntegrationTest {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @MockitoBean
+    private EmailService emailService;
 
     private Loan activeLoan;
     private Loan overdueLoanCandidate;
@@ -84,7 +92,7 @@ class LoanTaskServiceIntegrationTest {
     }
 
     @Test
-    @DisplayName("should mark overdue loans correctly")
+    @DisplayName("should mark overdue loans correctly and send email")
     void shouldMarkOverdueLoans() {
         // Act
         loanTaskService.processOverdueLoans();
@@ -95,5 +103,13 @@ class LoanTaskServiceIntegrationTest {
 
         assertThat(updatedActive.getStatus()).isEqualTo(LoanStatus.ACTIVE);
         assertThat(updatedOverdue.getStatus()).isEqualTo(LoanStatus.OVERDUE);
+
+        // Verify email reminder was sent for the overdue loan
+        verify(emailService).sendOverdueReminder(
+                eq(overdueLoanCandidate.getMember().getEmail()),
+                anyString(),
+                eq(overdueLoanCandidate.getBook().getTitle()),
+                anyString()
+        );
     }
 }

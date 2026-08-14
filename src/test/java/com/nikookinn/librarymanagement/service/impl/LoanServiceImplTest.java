@@ -38,6 +38,8 @@ class LoanServiceImplTest {
     private BookRepository bookRepository;
     @Mock
     private MemberRepository memberRepository;
+    @Mock
+    private com.nikookinn.librarymanagement.service.EmailService emailService;
 
     @InjectMocks
     private LoanServiceImpl loanService;
@@ -75,6 +77,7 @@ class LoanServiceImplTest {
         void shouldCreateLoan() {
             // Arrange
             LoanCreateRequest request = new LoanCreateRequest(1L, 1L, LocalDateTime.now().plusDays(14));
+            member.setEmail("test@example.com");
             when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
             when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
             when(loanRepository.save(any(Loan.class))).thenReturn(loan);
@@ -89,6 +92,7 @@ class LoanServiceImplTest {
             verify(memberRepository).findById(1L);
             verify(bookRepository).save(book);
             verify(loanRepository).save(any(Loan.class));
+            verify(emailService).sendLoanConfirmation(eq(member.getEmail()), anyString(), eq(book.getTitle()), anyString());
         }
 
         @Test
@@ -167,7 +171,6 @@ class LoanServiceImplTest {
             // Assert
             assertThat(loan.getStatus()).isEqualTo(LoanStatus.RETURNED);
             assertThat(book.getAvailableCopies()).isEqualTo(1);
-            verify(loanRepository).markOverdueLoans(any());
             verify(loanRepository).findById(1L);
             verify(bookRepository).save(book);
             verify(loanRepository).save(loan);

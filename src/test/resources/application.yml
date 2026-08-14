@@ -9,6 +9,15 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: false
+  mail:
+    host: localhost
+    port: 1025
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
 
 jwt:
   secret: dGVzdC1vbmx5LWp3dC1zZWNyZXQta2V5LXNob3VsZC1iZS0zMi1ieXRlcy1sb25n
@@ -18,3 +27,5 @@ app:
   admin:
     email: admin@test.local
     password: test-admin-password
+  upload:
+    dir: test-uploads

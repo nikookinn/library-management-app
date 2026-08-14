@@ -32,9 +32,20 @@ services:
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
       INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL}
       INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD}
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
     depends_on:
       db:
         condition: service_healthy
+      mailhog:
+        condition: service_started
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: library-mailhog
+    ports:
+      - "1025:1025" # SMTP port
+      - "8025:8025" # HTTP UI port
 
 volumes:
   postgres_data:

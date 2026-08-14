@@ -7,12 +7,15 @@ import com.nikookinn.librarymanagement.repository.LoanRepository;
 import com.nikookinn.librarymanagement.repository.MemberRepository;
 import com.nikookinn.librarymanagement.repository.CategoryRepository;
 import com.nikookinn.librarymanagement.service.LoanService;
+import com.nikookinn.librarymanagement.service.EmailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.time.LocalDate;
@@ -21,7 +24,10 @@ import java.time.LocalDateTime;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 @DisplayName("Loan Service Integration Tests")
@@ -44,6 +50,12 @@ class LoanServiceIntegrationTest {
 
     @Autowired
     private CacheManager cacheManager;
+
+    @MockitoBean
+    private EmailService emailService;
+
+    @MockitoBean
+    private JavaMailSender mailSender;
 
     private Book book;
     private Member member;
@@ -133,6 +145,9 @@ class LoanServiceIntegrationTest {
 
         // Verify book cache is cleared because availableCopies changed
         assertThat(cacheManager.getCache("books").get(book.getId())).isNull();
+
+        // Verify email was sent
+        verify(emailService).sendLoanConfirmation(eq(member.getEmail()), anyString(), eq(book.getTitle()), anyString());
     }
 
     @Test

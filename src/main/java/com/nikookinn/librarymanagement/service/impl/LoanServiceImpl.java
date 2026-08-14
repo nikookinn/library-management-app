@@ -31,11 +31,16 @@ public class LoanServiceImpl implements LoanService {
     private final LoanRepository loanRepository;
     private final BookRepository bookRepository;
     private final MemberRepository memberRepository;
+    private final com.nikookinn.librarymanagement.service.EmailService emailService;
 
-    public LoanServiceImpl(LoanRepository loanRepository, BookRepository bookRepository, MemberRepository memberRepository) {
+    public LoanServiceImpl(LoanRepository loanRepository,
+                           BookRepository bookRepository,
+                           MemberRepository memberRepository,
+                           com.nikookinn.librarymanagement.service.EmailService emailService) {
         this.loanRepository = loanRepository;
         this.bookRepository = bookRepository;
         this.memberRepository = memberRepository;
+        this.emailService = emailService;
     }
 
     @Override
@@ -74,7 +79,17 @@ public class LoanServiceImpl implements LoanService {
 
         book.setAvailableCopies(book.getAvailableCopies() - 1);
         bookRepository.save(book);
-        return LoanMapper.toResponse(loanRepository.save(loan));
+        Loan savedLoan = loanRepository.save(loan);
+
+        // Async email notification
+        emailService.sendLoanConfirmation(
+                member.getEmail(),
+                member.getFirstName() + " " + member.getLastName(),
+                book.getTitle(),
+                savedLoan.getDueDate().toString()
+        );
+
+        return LoanMapper.toResponse(savedLoan);
     }
 
     @Override

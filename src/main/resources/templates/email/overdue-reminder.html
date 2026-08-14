@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+          <tr>
+            <td style="background:#c0392b;padding:28px 40px;">
+              <h1 style="margin:0;color:#ffffff;font-size:20px;letter-spacing:0.5px;">&#9888; Library Management System</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:36px 40px;">
+              <p style="margin:0 0 8px;color:#333;font-size:16px;">
+                Hello, <strong th:text="${memberName}">Member</strong>!
+              </p>
+              <p style="margin:0 0 24px;color:#555;font-size:14px;line-height:1.6;">
+                Your book is <strong style="color:#c0392b;">overdue</strong>. Please return it as soon as possible.
+              </p>
+              <table width="100%" cellpadding="12" cellspacing="0" style="background:#fff5f5;border-radius:6px;border:1px solid #f5c6c6;">
+                <tr>
+                  <td style="color:#888;font-size:13px;width:40%;">Book</td>
+                  <td style="color:#222;font-size:13px;font-weight:bold;" th:text="${bookTitle}">Book Title</td>
+                </tr>
+                <tr style="border-top:1px solid #f5c6c6;">
+                  <td style="color:#888;font-size:13px;">Was due on</td>
+                  <td style="color:#c0392b;font-size:13px;font-weight:bold;" th:text="${dueDate}">Due Date</td>
+                </tr>
+              </table>
+              <p style="margin:24px 0 0;color:#555;font-size:14px;line-height:1.6;">
+                Continuing to hold the book may result in additional fines or suspension of your library membership.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background:#f0f0f0;padding:16px 40px;text-align:center;">
+              <p style="margin:0;color:#aaa;font-size:12px;">&#169; Library Management System. This is an automated message.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
