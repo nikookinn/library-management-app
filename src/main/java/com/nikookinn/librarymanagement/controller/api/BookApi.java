@@ -76,7 +76,7 @@ public interface BookApi {
     ResponseEntity<List<CategoryStatsResponse>> getTopCategories();
 
     @Operation(summary = "Get available books with full details")
-    ResponseEntity<List<BookResponse>> getAvailableBooksWithDetails(Pageable pageable);
+    ResponseEntity<Page<BookResponse>> getAvailableBooksWithDetails(Pageable pageable);
 
     @Operation(summary = "Get books by category and minimum availability")
     ResponseEntity<List<BookResponse>> getBooksByCategoryAndAvailability(Long categoryId, int minCopies);

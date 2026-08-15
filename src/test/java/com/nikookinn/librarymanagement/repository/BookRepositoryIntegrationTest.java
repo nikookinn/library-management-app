@@ -159,15 +159,15 @@ class BookRepositoryIntegrationTest {
     }
 
     @Test
-    @DisplayName("should find available books with details (JOIN FETCH)")
+    @DisplayName("should find available books with details")
     void shouldFindAvailableBooksWithDetails() {
         // Act
-        List<Book> result = bookRepository.findAvailableBooksWithDetails(PageRequest.of(0, 10));
+        Page<Book> result = bookRepository.findAvailableBooksWithDetails(PageRequest.of(0, 10));
 
         // Assert
-        assertThat(result).hasSize(2);
+        assertThat(result.getContent()).hasSize(2);
         // Verify titles to ensure sorting
-        assertThat(result.get(0).getTitle()).isEqualTo("Sapiens");
-        assertThat(result.get(1).getTitle()).isEqualTo("The Lord of the Rings");
+        assertThat(result.getContent().get(0).getTitle()).isEqualTo("Sapiens");
+        assertThat(result.getContent().get(1).getTitle()).isEqualTo("The Lord of the Rings");
     }
 }

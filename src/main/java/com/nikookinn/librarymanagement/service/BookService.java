@@ -30,7 +30,7 @@ public interface BookService {
 
     List<BookResponse> getBooksNeverBorrowed();
     List<CategoryStatsResponse> getTopCategories();
-    List<BookResponse> getAvailableBooksWithDetails(Pageable pageable);
+    Page<BookResponse> getAvailableBooksWithDetails(Pageable pageable);
     List<BookResponse> getBooksByCategoryAndAvailability(Long categoryId, int minCopies);
     List<BookLoanStatsResponse> getMostBorrowedBooks(int limit);
     

@@ -10,42 +10,47 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface BookRepository extends JpaRepository<Book, Long>, JpaSpecificationExecutor<Book> {
-    @EntityGraph(value = "Book.category", type = EntityGraph.EntityGraphType.FETCH)
+    @Override
+    @EntityGraph(value = "Book.authorsAndCategory", type = EntityGraph.EntityGraphType.FETCH)
+    Optional<Book> findById(Long id);
+    @EntityGraph(value = "Book.authorsAndCategory", type = EntityGraph.EntityGraphType.FETCH)
     Page<Book> findAll(Pageable pageable);
 
     @Override
-    @EntityGraph(value = "Book.category", type = EntityGraph.EntityGraphType.FETCH)
+    @EntityGraph(value = "Book.authorsAndCategory", type = EntityGraph.EntityGraphType.FETCH)
     Page<Book> findAll(org.springframework.data.jpa.domain.Specification<Book> spec, Pageable pageable);
 
-    @EntityGraph(value = "Book.category", type = EntityGraph.EntityGraphType.FETCH)
+    @EntityGraph(value = "Book.authorsAndCategory", type = EntityGraph.EntityGraphType.FETCH)
     Page<Book> findByCategory_Id(Long categoryId, Pageable pageable);
     
-    @EntityGraph(value = "Book.category", type = EntityGraph.EntityGraphType.FETCH)
+    @EntityGraph(value = "Book.authorsAndCategory", type = EntityGraph.EntityGraphType.FETCH)
     @Query("SELECT b FROM Book b JOIN b.authors a WHERE a.id = :authorId")
     Page<Book> findByAuthor_Id(@Param("authorId") Long authorId, Pageable pageable);
     
-    @EntityGraph(value = "Book.category", type = EntityGraph.EntityGraphType.FETCH)
+    @EntityGraph(value = "Book.authorsAndCategory", type = EntityGraph.EntityGraphType.FETCH)
     Page<Book> findByTitleContainingIgnoreCase(String title, Pageable pageable);
     
-    @EntityGraph(value = "Book.category", type = EntityGraph.EntityGraphType.FETCH)
+    @EntityGraph(value = "Book.authorsAndCategory", type = EntityGraph.EntityGraphType.FETCH)
     Page<Book> findByAvailableCopiesGreaterThan(Integer copies, Pageable pageable);
 
-    @Query("SELECT DISTINCT b FROM Book b JOIN FETCH b.authors JOIN FETCH b.category WHERE b.availableCopies > 0 ORDER BY b.title ASC")
-    List<Book> findAvailableBooksWithDetails(Pageable pageable);
+    @EntityGraph(value = "Book.authorsAndCategory", type = EntityGraph.EntityGraphType.FETCH)
+    @Query("SELECT b FROM Book b WHERE b.availableCopies > 0 ORDER BY b.title ASC")
+    Page<Book> findAvailableBooksWithDetails(Pageable pageable);
 
-    @Query("SELECT b FROM Book b WHERE b.category.id = :categoryId AND b.availableCopies > :minCopies ORDER BY b.title ASC")
+    @Query("SELECT DISTINCT b FROM Book b JOIN FETCH b.authors JOIN FETCH b.category WHERE b.category.id = :categoryId AND b.availableCopies > :minCopies ORDER BY b.title ASC")
     List<Book> findByCategoryAndAvailability(@Param("categoryId") Long categoryId, @Param("minCopies") Integer minCopies);
 
     @Query(value = "SELECT b.id, b.title, b.isbn, COUNT(l.id) AS loan_count FROM books b LEFT JOIN loans l ON b.id = l.book_id AND l.status IN ('ACTIVE', 'OVERDUE') GROUP BY b.id, b.title, b.isbn ORDER BY loan_count DESC LIMIT :limit", nativeQuery = true)
     List<Object[]> findMostBorrowedBooks(@Param("limit") int limit);
 
-    @EntityGraph(value = "Book.category", type = EntityGraph.EntityGraphType.FETCH)
+    @EntityGraph(value = "Book.authorsAndCategory", type = EntityGraph.EntityGraphType.FETCH)
     @Query("SELECT b FROM Book b WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(b.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<Book> searchByTitleOrDescription(@Param("keyword") String keyword, Pageable pageable);
 
-    @Query(value = "SELECT b.* FROM books b WHERE b.id NOT IN (SELECT DISTINCT book_id FROM loans)", nativeQuery = true)
+    @Query("SELECT DISTINCT b FROM Book b LEFT JOIN FETCH b.authors LEFT JOIN FETCH b.category WHERE b.id NOT IN (SELECT l.book.id FROM Loan l)")
     List<Book> findBooksNeverBorrowed();
 
     @Query(value = "SELECT c.name, COUNT(l.id) as loan_count " +

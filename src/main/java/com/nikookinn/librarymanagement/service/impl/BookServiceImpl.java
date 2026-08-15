@@ -215,11 +215,9 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Cacheable(value = "books", key = "#pageable")
-    public List<BookResponse> getAvailableBooksWithDetails(Pageable pageable) {
+    public Page<BookResponse> getAvailableBooksWithDetails(Pageable pageable) {
         return bookRepository.findAvailableBooksWithDetails(pageable)
-                .stream()
-                .map(BookMapper::toResponse)
-                .collect(Collectors.toList());
+                .map(BookMapper::toResponse);
     }
 
     @Override

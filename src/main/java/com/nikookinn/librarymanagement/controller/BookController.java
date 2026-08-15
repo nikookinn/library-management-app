@@ -143,7 +143,7 @@ public class BookController implements BookApi {
 
     @Override
     @GetMapping("/available/details")
-    public ResponseEntity<List<BookResponse>> getAvailableBooksWithDetails(
+    public ResponseEntity<Page<BookResponse>> getAvailableBooksWithDetails(
             @PageableDefault(size = 10, page = 0) Pageable pageable) {
         return ResponseEntity.ok(bookService.getAvailableBooksWithDetails(pageable));
     }
