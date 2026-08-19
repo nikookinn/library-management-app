@@ -5,6 +5,7 @@ import com.nikookinn.librarymanagement.dto.request.MemberCreateRequest;
 import com.nikookinn.librarymanagement.dto.request.MemberUpdateRequest;
 import com.nikookinn.librarymanagement.entity.Member;
 import com.nikookinn.librarymanagement.repository.MemberRepository;
+import com.nikookinn.librarymanagement.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @Transactional
 @DisplayName("Member Controller Integration Tests")
-class MemberControllerIntegrationTest {
+class MemberControllerIntegrationTest extends AbstractIntegrationTest {
 
     private MockMvc mockMvc;
 

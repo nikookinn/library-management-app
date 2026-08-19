@@ -3,26 +3,36 @@ package com.nikookinn.librarymanagement.config;
 import com.nikookinn.librarymanagement.entity.Role;
 import com.nikookinn.librarymanagement.entity.User;
 import com.nikookinn.librarymanagement.repository.UserRepository;
+import com.nikookinn.librarymanagement.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:default-admin-test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
-        "spring.jpa.hibernate.ddl-auto=create-drop"
-})
+@SpringBootTest
+@Transactional
 @DisplayName("Default Admin Initializer Integration Tests")
-class DefaultAdminInitializerIntegrationTest {
+class DefaultAdminInitializerIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private CommandLineRunner createDefaultAdmin;
+
+    @BeforeEach
+    void setUp() throws Exception {
+        userRepository.deleteAll();
+        createDefaultAdmin.run();
+    }
 
     @Nested
     @DisplayName("Admin Account Creation")

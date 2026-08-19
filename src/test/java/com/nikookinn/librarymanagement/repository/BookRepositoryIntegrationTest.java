@@ -3,6 +3,7 @@ package com.nikookinn.librarymanagement.repository;
 import com.nikookinn.librarymanagement.dto.request.BookSearchRequest;
 import com.nikookinn.librarymanagement.entity.*;
 import com.nikookinn.librarymanagement.repository.specification.BookSpecification;
+import com.nikookinn.librarymanagement.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @Transactional
 @DisplayName("Book Repository Complex Query & Specification Tests")
-class BookRepositoryIntegrationTest {
+class BookRepositoryIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private BookRepository bookRepository;

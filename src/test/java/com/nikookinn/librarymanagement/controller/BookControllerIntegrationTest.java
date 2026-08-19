@@ -9,6 +9,7 @@ import com.nikookinn.librarymanagement.entity.Category;
 import com.nikookinn.librarymanagement.repository.AuthorRepository;
 import com.nikookinn.librarymanagement.repository.BookRepository;
 import com.nikookinn.librarymanagement.repository.CategoryRepository;
+import com.nikookinn.librarymanagement.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,10 +29,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@ActiveProfiles("dev")
 @Transactional
 @DisplayName("Book Controller Integration Tests")
-class BookControllerIntegrationTest {
+class BookControllerIntegrationTest extends AbstractIntegrationTest {
 
     private MockMvc mockMvc;
 
@@ -58,7 +57,11 @@ class BookControllerIntegrationTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        
+
+        bookRepository.deleteAll();
+        categoryRepository.deleteAll();
+        authorRepository.deleteAll();
+
         author = new Author();
         author.setFirstName("J.R.R.");
         author.setLastName("Tolkien");

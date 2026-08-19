@@ -4,6 +4,7 @@ import com.nikookinn.librarymanagement.entity.Book;
 import com.nikookinn.librarymanagement.entity.Loan;
 import com.nikookinn.librarymanagement.entity.LoanStatus;
 import com.nikookinn.librarymanagement.entity.Member;
+import com.nikookinn.librarymanagement.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @Transactional
 @DisplayName("Loan Repository Integration Tests")
-class LoanRepositoryTest {
+class LoanRepositoryTest extends AbstractIntegrationTest {
 
     @Autowired
     private LoanRepository loanRepository;

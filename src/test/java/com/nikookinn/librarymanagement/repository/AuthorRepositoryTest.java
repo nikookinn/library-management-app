@@ -3,6 +3,7 @@ package com.nikookinn.librarymanagement.repository;
 import com.nikookinn.librarymanagement.entity.Author;
 import com.nikookinn.librarymanagement.entity.Book;
 import com.nikookinn.librarymanagement.entity.Category;
+import com.nikookinn.librarymanagement.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @Transactional
 @DisplayName("Author Repository Integration Tests")
-class AuthorRepositoryTest {
+class AuthorRepositoryTest extends AbstractIntegrationTest {
 
     @Autowired
     private AuthorRepository authorRepository;

@@ -6,6 +6,7 @@ import com.nikookinn.librarymanagement.dto.request.RegisterRequest;
 import com.nikookinn.librarymanagement.entity.Role;
 import com.nikookinn.librarymanagement.entity.User;
 import com.nikookinn.librarymanagement.repository.UserRepository;
+import com.nikookinn.librarymanagement.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @Transactional
 @DisplayName("Authentication Controller Integration Tests")
-class AuthControllerIntegrationTest {
+class AuthControllerIntegrationTest extends AbstractIntegrationTest {
 
     private MockMvc mockMvc;
 

@@ -9,6 +9,7 @@ import com.nikookinn.librarymanagement.repository.AuthorRepository;
 import com.nikookinn.librarymanagement.repository.BookRepository;
 import com.nikookinn.librarymanagement.repository.CategoryRepository;
 import com.nikookinn.librarymanagement.service.BookService;
+import com.nikookinn.librarymanagement.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,9 +25,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-@ActiveProfiles("dev")
 @DisplayName("Book Service Integration Tests")
-class BookServiceIntegrationTest {
+class BookServiceIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private BookService bookService;

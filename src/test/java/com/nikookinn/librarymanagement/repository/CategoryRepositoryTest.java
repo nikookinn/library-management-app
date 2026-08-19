@@ -1,6 +1,7 @@
 package com.nikookinn.librarymanagement.repository;
 
 import com.nikookinn.librarymanagement.entity.Category;
+import com.nikookinn.librarymanagement.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @Transactional
 @DisplayName("Category Repository Integration Tests")
-class CategoryRepositoryTest {
+class CategoryRepositoryTest extends AbstractIntegrationTest {
 
     @Autowired
     private CategoryRepository categoryRepository;

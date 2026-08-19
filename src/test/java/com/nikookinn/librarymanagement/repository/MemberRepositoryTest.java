@@ -1,6 +1,7 @@
 package com.nikookinn.librarymanagement.repository;
 
 import com.nikookinn.librarymanagement.entity.Member;
+import com.nikookinn.librarymanagement.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @Transactional
 @DisplayName("Member Repository Integration Tests")
-class MemberRepositoryTest {
+class MemberRepositoryTest extends AbstractIntegrationTest {
 
     @Autowired
     private MemberRepository memberRepository;

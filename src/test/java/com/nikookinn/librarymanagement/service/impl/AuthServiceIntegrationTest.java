@@ -4,6 +4,7 @@ import com.nikookinn.librarymanagement.dto.request.RegisterRequest;
 import com.nikookinn.librarymanagement.entity.User;
 import com.nikookinn.librarymanagement.repository.UserRepository;
 import com.nikookinn.librarymanagement.service.AuthService;
+import com.nikookinn.librarymanagement.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,7 @@ import static org.mockito.Mockito.doThrow;
 
 @SpringBootTest
 @DisplayName("Auth Service Integration Tests")
-class AuthServiceIntegrationTest {
+class AuthServiceIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private AuthService authService;

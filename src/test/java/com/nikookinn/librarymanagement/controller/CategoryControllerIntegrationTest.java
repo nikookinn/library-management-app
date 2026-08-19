@@ -5,6 +5,7 @@ import com.nikookinn.librarymanagement.dto.request.CategoryCreateRequest;
 import com.nikookinn.librarymanagement.dto.request.CategoryUpdateRequest;
 import com.nikookinn.librarymanagement.entity.Category;
 import com.nikookinn.librarymanagement.repository.CategoryRepository;
+import com.nikookinn.librarymanagement.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @Transactional
-class CategoryControllerIntegrationTest {
+class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
 
     private MockMvc mockMvc;
 
@@ -46,7 +47,8 @@ class CategoryControllerIntegrationTest {
     }
 
     @Test
-    void getAllCategories_Success() throws Exception {
+    @DisplayName("should get all categories successfully")
+    void shouldGetAllCategoriesSuccessfully() throws Exception {
         mockMvc.perform(get("/api/categories"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
@@ -54,14 +56,16 @@ class CategoryControllerIntegrationTest {
     }
 
     @Test
-    void getCategoryById_Success() throws Exception {
+    @DisplayName("should get category by id successfully")
+    void shouldGetCategoryByIdSuccessfully() throws Exception {
         mockMvc.perform(get("/api/categories/{id}", category.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Fantasy"));
     }
 
     @Test
-    void createCategory_Success() throws Exception {
+    @DisplayName("should create category successfully")
+    void shouldCreateCategorySuccessfully() throws Exception {
         CategoryCreateRequest request = new CategoryCreateRequest("Adventure", "Adventure description");
 
         mockMvc.perform(post("/api/categories")
@@ -72,7 +76,8 @@ class CategoryControllerIntegrationTest {
     }
 
     @Test
-    void updateCategory_Success() throws Exception {
+    @DisplayName("should update category successfully")
+    void shouldUpdateCategorySuccessfully() throws Exception {
         CategoryUpdateRequest request = new CategoryUpdateRequest("Fantasy Updated", "Updated description");
 
         mockMvc.perform(put("/api/categories/{id}", category.getId())
@@ -83,7 +88,8 @@ class CategoryControllerIntegrationTest {
     }
 
     @Test
-    void deleteCategory_Success() throws Exception {
+    @DisplayName("should delete category successfully")
+    void shouldDeleteCategorySuccessfully() throws Exception {
         mockMvc.perform(delete("/api/categories/{id}", category.getId()))
                 .andExpect(status().isNoContent());
 

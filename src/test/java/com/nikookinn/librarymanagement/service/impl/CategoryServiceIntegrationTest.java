@@ -5,6 +5,7 @@ import com.nikookinn.librarymanagement.dto.request.CategoryUpdateRequest;
 import com.nikookinn.librarymanagement.entity.Category;
 import com.nikookinn.librarymanagement.repository.CategoryRepository;
 import com.nikookinn.librarymanagement.service.CategoryService;
+import com.nikookinn.librarymanagement.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,7 @@ import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @DisplayName("Category Service Integration Tests")
-class CategoryServiceIntegrationTest {
+class CategoryServiceIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private CategoryService categoryService;

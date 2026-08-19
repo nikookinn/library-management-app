@@ -4,6 +4,7 @@ import com.nikookinn.librarymanagement.entity.Role;
 import com.nikookinn.librarymanagement.entity.User;
 import com.nikookinn.librarymanagement.repository.UserRepository;
 import com.nikookinn.librarymanagement.service.JwtService;
+import com.nikookinn.librarymanagement.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -24,13 +25,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(properties = {
-        "spring.datasource.url=jdbc:h2:mem:auth-error-test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
-        "spring.jpa.hibernate.ddl-auto=create-drop"
-})
+@SpringBootTest
 @Transactional
 @DisplayName("Authentication and Authorization Error Handling Integration Tests")
-class AuthenticationErrorIntegrationTest {
+class AuthenticationErrorIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private WebApplicationContext webApplicationContext;

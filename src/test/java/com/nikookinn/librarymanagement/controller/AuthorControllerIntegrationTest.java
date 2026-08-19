@@ -5,6 +5,7 @@ import com.nikookinn.librarymanagement.dto.request.AuthorCreateRequest;
 import com.nikookinn.librarymanagement.dto.request.AuthorUpdateRequest;
 import com.nikookinn.librarymanagement.entity.Author;
 import com.nikookinn.librarymanagement.repository.AuthorRepository;
+import com.nikookinn.librarymanagement.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @Transactional
 @DisplayName("Author Controller Integration Tests")
-class AuthorControllerIntegrationTest {
+class AuthorControllerIntegrationTest extends AbstractIntegrationTest {
 
     private MockMvc mockMvc;
 

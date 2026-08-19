@@ -5,6 +5,7 @@ import com.nikookinn.librarymanagement.dto.request.MemberUpdateRequest;
 import com.nikookinn.librarymanagement.entity.Member;
 import com.nikookinn.librarymanagement.repository.MemberRepository;
 import com.nikookinn.librarymanagement.service.MemberService;
+import com.nikookinn.librarymanagement.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,7 @@ import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @DisplayName("Member Service Integration Tests")
-class MemberServiceIntegrationTest {
+class MemberServiceIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private MemberService memberService;

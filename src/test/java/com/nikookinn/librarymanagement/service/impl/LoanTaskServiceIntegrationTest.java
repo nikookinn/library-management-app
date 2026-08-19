@@ -10,6 +10,7 @@ import com.nikookinn.librarymanagement.repository.CategoryRepository;
 import com.nikookinn.librarymanagement.repository.LoanRepository;
 import com.nikookinn.librarymanagement.repository.MemberRepository;
 import com.nikookinn.librarymanagement.service.EmailService;
+import com.nikookinn.librarymanagement.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ import static org.mockito.Mockito.verify;
 @SpringBootTest
 @Transactional
 @DisplayName("Loan Task Service Integration Tests")
-class LoanTaskServiceIntegrationTest {
+class LoanTaskServiceIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private LoanTaskServiceImpl loanTaskService;
@@ -53,6 +54,11 @@ class LoanTaskServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        loanRepository.deleteAllInBatch();
+        bookRepository.deleteAllInBatch();
+        memberRepository.deleteAllInBatch();
+        categoryRepository.deleteAllInBatch();
+
         Category category = new Category();
         category.setName("Test Category");
         category = categoryRepository.save(category);

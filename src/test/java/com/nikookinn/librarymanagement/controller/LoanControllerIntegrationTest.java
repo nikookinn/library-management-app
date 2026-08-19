@@ -7,6 +7,7 @@ import com.nikookinn.librarymanagement.entity.*;
 import com.nikookinn.librarymanagement.repository.BookRepository;
 import com.nikookinn.librarymanagement.repository.LoanRepository;
 import com.nikookinn.librarymanagement.repository.MemberRepository;
+import com.nikookinn.librarymanagement.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @Transactional
 @DisplayName("Loan Controller Integration Tests")
-class LoanControllerIntegrationTest {
+class LoanControllerIntegrationTest extends AbstractIntegrationTest {
 
     private MockMvc mockMvc;
 

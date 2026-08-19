@@ -9,6 +9,7 @@ import com.nikookinn.librarymanagement.repository.CategoryRepository;
 import com.nikookinn.librarymanagement.repository.LoanRepository;
 import com.nikookinn.librarymanagement.repository.MemberRepository;
 import com.nikookinn.librarymanagement.service.LoanService;
+import com.nikookinn.librarymanagement.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ import static org.mockito.Mockito.doAnswer;
 
 @SpringBootTest
 @DisplayName("Async Email Integration Test")
-class AsyncEmailIntegrationTest {
+class AsyncEmailIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private LoanService loanService;

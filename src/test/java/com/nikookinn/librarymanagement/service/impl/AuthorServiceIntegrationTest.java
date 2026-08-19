@@ -5,6 +5,7 @@ import com.nikookinn.librarymanagement.dto.request.AuthorUpdateRequest;
 import com.nikookinn.librarymanagement.entity.Author;
 import com.nikookinn.librarymanagement.repository.AuthorRepository;
 import com.nikookinn.librarymanagement.service.AuthorService;
+import com.nikookinn.librarymanagement.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,7 @@ import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @DisplayName("Author Service Integration Tests")
-class AuthorServiceIntegrationTest {
+class AuthorServiceIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private AuthorService authorService;

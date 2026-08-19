@@ -25,8 +25,9 @@ This is a Spring Boot application with a clean layered architecture (Controller,
 - Java 26
 - Spring Boot 4.1.0
 - Spring Data JPA
-- H2 Database (for local development and testing)
-- PostgreSQL (for Docker/production environment)
+- Flyway (versioned database migrations)
+- PostgreSQL (dev, test, and production — the same database engine everywhere)
+- Testcontainers (real PostgreSQL container for integration tests)
 - Caffeine Cache (in-memory caching)
 - JavaMailSender + MailHog (email sending and testing)
 - Thymeleaf (HTML email templates)
@@ -60,19 +61,20 @@ Email:    admin@admin.com
 Password: admin
 ```
 
-You can change these before starting the application by setting `INITIAL_ADMIN_EMAIL` and `INITIAL_ADMIN_PASSWORD` in your `.env` file. For production, always set a unique email address and a strong password before the first start.
+You can change these before starting the application by setting `INITIAL_ADMIN_EMAIL` and `INITIAL_ADMIN_PASSWORD` in your `.env` file. The default (`admin@admin.com` / `admin`) only applies to the `dev` profile; under the `prod` profile, `INITIAL_ADMIN_EMAIL`, `INITIAL_ADMIN_PASSWORD`, `DB_USERNAME` and `DB_PASSWORD` have **no fallback value** — the application refuses to start if they are not explicitly provided, so a real production deployment can never boot with an insecure default.
 
 ### How to Run
 It is very easy to run this project. You have two options:
 
 #### Option 1: Using Gradle (Local)
 1. Make sure you have Java 26 installed.
-2. Open a terminal in the project folder and run:
+2. Start a local PostgreSQL instance (e.g. `docker compose up db`), or point `DB_HOST`/`DB_PORT`/`DB_NAME`/`DB_USERNAME`/`DB_PASSWORD` at an existing one.
+3. Open a terminal in the project folder and run:
    - On Windows: `gradlew.bat bootRun`
    - On Linux/Mac: `./gradlew bootRun`
-3. The app will be ready at `http://localhost:8080`.
+4. The app will be ready at `http://localhost:8080`.
 
-This option uses the `dev` profile with an H2 in-memory database. No PostgreSQL needed.
+This option uses the `dev` profile, which also talks to PostgreSQL (defaults: `localhost:5432/librarydb_dev`, `postgres`/`postgres`) — there is no H2/in-memory fallback, dev now behaves exactly like production.
 
 #### Option 2: Using Docker Compose
 This is even easier because you don't need to install Java or PostgreSQL manually.
@@ -85,8 +87,18 @@ This is even easier because you don't need to install Java or PostgreSQL manuall
 
 Docker Compose also starts a **MailHog** container, so you can actually test email notifications. When a loan is created or a book becomes overdue, the email lands in MailHog instead of a real inbox. Open the MailHog UI at `http://localhost:8025` to see the emails.
 
+### Database Migrations
+The database schema is fully managed by **Flyway**. Migration scripts live under `src/main/resources/db/migration` and are named following the `V<version>__<description>.sql` convention (e.g. `V1__create_users_table.sql`).
+
+- `spring.jpa.hibernate.ddl-auto` is set to `validate` in every profile (dev, prod, and tests) — Hibernate never creates or alters tables, it only checks that the entities match the schema Flyway created.
+- On startup, Flyway automatically applies any pending migration before the application context (and Hibernate) initializes.
+- To add a schema change, create a new `V<next-number>__description.sql` file in `db/migration` — never edit an already-applied migration file.
+
 ### Running Tests
 I wrote many tests to make sure everything works correctly. I have unit tests for services, repository tests, and integration tests for controllers.
+
+All integration tests (repository/service/controller/security) run against a **real PostgreSQL database provisioned by Testcontainers** — see `testsupport/AbstractIntegrationTest`. Every such test class extends it, gets Flyway-migrated schema, and connects through Spring Boot's `@ServiceConnection` support, so there is no H2 anywhere in the codebase and the exact same database engine (and the exact same migration scripts) used in production is used in tests. **Docker must be running** on the machine (or CI runner) that executes the tests — GitHub Actions' `ubuntu-latest` runners have Docker pre-installed, so no extra setup is needed there.
+
 To run all tests, use this command:
 - On Windows: `gradlew.bat test`
 - On Linux/Mac: `./gradlew test`
