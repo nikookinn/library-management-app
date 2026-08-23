@@ -11,6 +11,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,6 +27,8 @@ import java.io.IOException;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
@@ -60,18 +64,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (ExpiredJwtException e) {
             SecurityContextHolder.clearContext();
+            log.warn("Rejected request with expired JWT for path {}", request.getRequestURI());
             sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "Token has expired");
             return;
         } catch (MalformedJwtException e) {
             SecurityContextHolder.clearContext();
+            log.warn("Rejected request with malformed JWT for path {}", request.getRequestURI());
             sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "Token is malformed");
             return;
         } catch (JwtException | IllegalArgumentException e) {
             SecurityContextHolder.clearContext();
+            log.warn("Rejected request with invalid JWT for path {}", request.getRequestURI());
             sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "Invalid token");
             return;
         } catch (UsernameNotFoundException e) {
             SecurityContextHolder.clearContext();
+            log.warn("Rejected request with JWT for unknown user, path {}", request.getRequestURI());
             sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "User not found");
             return;
         }

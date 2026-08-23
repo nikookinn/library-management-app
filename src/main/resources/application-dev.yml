@@ -10,3 +10,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+logging:
+  level:
+    com.nikookinn.librarymanagement: ${LOG_LEVEL_APP:DEBUG}

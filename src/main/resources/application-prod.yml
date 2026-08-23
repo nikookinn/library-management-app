@@ -16,6 +16,20 @@ spring:
     baseline-version: 0
     baseline-description: "Baseline for existing production schema"
 
+logging:
+  level:
+    root: ${LOG_LEVEL_ROOT:WARN}
+    com.nikookinn.librarymanagement: ${LOG_LEVEL_APP:INFO}
+    org.springframework.web: ${LOG_LEVEL_SPRING_WEB:WARN}
+    org.hibernate: ${LOG_LEVEL_HIBERNATE:WARN}
+  structured:
+    format:
+      console: ${LOG_FORMAT:ecs}
+    ecs:
+      service:
+        name: ${spring.application.name}
+        environment: ${ENVIRONMENT:production}
+
 app:
   admin:
     email: ${INITIAL_ADMIN_EMAIL}

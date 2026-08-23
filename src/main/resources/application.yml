@@ -26,6 +26,13 @@ spring:
       ddl-auto: validate
     open-in-view: false
 
+logging:
+  level:
+    root: ${LOG_LEVEL_ROOT:INFO}
+    com.nikookinn.librarymanagement: ${LOG_LEVEL_APP:INFO}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%X{requestId}] [%15.15t] %-40.40logger{39} : %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"
+
 jwt:
   secret: ${JWT_SECRET}
   expiration-ms: ${JWT_EXPIRATION_MS:3600000}
