@@ -1,0 +1,26 @@
+# Version control / IDE
+.git
+.gitignore
+.idea
+*.iml
+
+# Build outputs (rebuilt inside the image; never trusted from the host)
+build/
+.gradle/
+out/
+bin/
+
+# Local runtime data / uploaded content - never bake into the image
+data/
+uploads/
+test-uploads/
+
+# Secrets and local environment configuration - must never enter the build context
+.env
+.env.*
+
+# Documentation and misc project files not needed to build/run the jar
+docs/
+HELP.md
+README.md
+docker-compose.yml
