@@ -197,7 +197,11 @@ jobs:
 
       - name: Publish vulnerability report (informational)
         if: always()
-        uses: aquasecurity/trivy-action@v0.28.0
+        # Pinned to the commit SHA for v0.36.0 (not a mutable tag): aquasecurity/trivy-action and its
+        # dependency aquasecurity/setup-trivy were compromised in a supply-chain attack (tags 0.0.1-0.34.2
+        # affected); the poisoned tags were later deleted, breaking any workflow referencing them by tag.
+        # A commit SHA cannot be silently retargeted or deleted the way a tag can.
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: ${{ steps.meta.outputs.sha_tag }}
           format: sarif
@@ -219,7 +223,8 @@ jobs:
       # vulnerable image can never be pushed. Findings can never be silently ignored: `ignore-unfixed: false`
       # means even vulnerabilities without a published fix still fail the build.
       - name: Scan image for vulnerabilities (severity gate)
-        uses: aquasecurity/trivy-action@v0.28.0
+        # Pinned to the commit SHA for v0.36.0, see comment on the report-publishing step above.
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: ${{ steps.meta.outputs.sha_tag }}
           format: table
