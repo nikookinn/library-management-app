@@ -64,6 +64,8 @@ dependencyCheck {
 	def apiKeyFromEnv = System.getenv('NVD_API_KEY')
 	if (apiKeyFromEnv) {
 		nvd.apiKey = apiKeyFromEnv
+		nvd.delay = 10000
+		nvd.maxRetryCount = 3
 	}
 
 	analyzers.assemblyEnabled = false
