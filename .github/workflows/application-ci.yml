@@ -219,7 +219,7 @@ jobs:
       # vulnerable image can never be pushed. Findings can never be silently ignored: `ignore-unfixed: false`
       # means even vulnerabilities without a published fix still fail the build.
       - name: Scan image for vulnerabilities (severity gate)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.28.0
         with:
           image-ref: ${{ steps.meta.outputs.sha_tag }}
           format: table
