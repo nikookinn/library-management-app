@@ -126,24 +126,14 @@ jobs:
           restore-keys: |
             dependency-check-data-
 
-      # Temporary: NVD_API_KEY has not been issued/approved yet (request pending at nvd.nist.gov). Without it,
-      # this step fails fast with "Invalid API Key" on every run. Marked continue-on-error so the pipeline is not
-      # blocked while the key is pending; this must be reverted to a hard failure once NVD_API_KEY is configured
-      # as a repository secret, so Critical/High findings resume gating the build as originally required.
+      # NVD_API_KEY is configured as a repository secret, so this step now hard-fails the job on any
+      # Critical/High finding (per failBuildOnCVSS in build.gradle), exactly as originally intended.
       - name: Run dependency vulnerability scan
         id: dependency-check
-        continue-on-error: true
         run: ./gradlew dependencyCheckAnalyze --no-daemon
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
           DEPENDENCY_CHECK_DATA_DIR: /home/runner/.dependency-check-data
-
-      - name: Warn if dependency scan was skipped due to missing NVD API key
-        if: steps.dependency-check.outcome == 'failure'
-        run: |
-          echo "::warning title=Dependency scan not enforced::dependencyCheckAnalyze failed (most likely a " \
-            "missing/invalid NVD_API_KEY) and was allowed to continue. This is a temporary soft-fail; it must " \
-            "be removed once NVD_API_KEY is configured as a repository secret."
 
       - name: Publish dependency-check report
         if: always()
