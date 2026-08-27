@@ -26,6 +26,11 @@ LABEL org.opencontainers.image.title="library-management-application" \
       org.opencontainers.image.description="Library Management Application - Spring Boot REST API" \
       org.opencontainers.image.licenses="NOASSERTION"
 
+# Refresh Alpine's own packages (openssl/libcrypto3/libssl3, etc.) to their latest patched versions at build
+# time, since the base image's package snapshot ages as new CVEs are disclosed after it was published; this
+# is what the Trivy severity gate in CI scans.
+RUN apk update && apk upgrade --no-cache
+
 RUN addgroup -g 10001 spring \
     && adduser -D -H -u 10001 -G spring spring
 

@@ -38,7 +38,10 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 	testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
 
-	runtimeOnly 'org.postgresql:postgresql'
+	// Version pinned above Spring Boot's dependency-management BOM default (which currently resolves to
+	// 42.7.11) to pull in the fix for CVE-2026-54291 (SCRAM-SHA-256-PLUS downgrade MITM bypass), flagged by
+	// the Trivy severity gate in CI.
+	runtimeOnly 'org.postgresql:postgresql:42.7.13'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
 	testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
