@@ -2,7 +2,6 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '4.1.1'
 	id 'io.spring.dependency-management' version '1.1.7'
-	id 'org.owasp.dependencycheck' version '13.0.0'
 }
 
 group = 'com.nikookinn'
@@ -51,24 +50,4 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
-}
-
-dependencyCheck {
-	// Fail the build on anything High or Critical (CVSS >= 7.0); the plugin's own default (11) never fails,
-	// so this must be set explicitly to avoid silently ignoring known-exploitable dependencies.
-	failBuildOnCVSS = 7.0
-	formats = ['HTML', 'JSON']
-	suppressionFiles = ['config/dependency-check/suppressions.xml']
-	data.directory = System.getenv('DEPENDENCY_CHECK_DATA_DIR') ?: "${System.properties['user.home']}/.dependency-check-data"
-
-	def apiKeyFromEnv = System.getenv('NVD_API_KEY')
-	if (apiKeyFromEnv) {
-		nvd.apiKey = apiKeyFromEnv
-		nvd.delay = 10000
-		nvd.maxRetryCount = 3
-	}
-
-	analyzers.assemblyEnabled = false
-	analyzers.nodeAudit.enabled = false
-	analyzers.retirejs.enabled = false
 }

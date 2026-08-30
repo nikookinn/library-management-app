@@ -17,7 +17,6 @@ on:
       - 'gradlew'
       - 'gradlew.bat'
       - 'Dockerfile'
-      - 'config/dependency-check/**'
       - '.github/workflows/application-ci.yml'
   pull_request:
     branches:
@@ -32,7 +31,6 @@ on:
       - 'gradlew'
       - 'gradlew.bat'
       - 'Dockerfile'
-      - 'config/dependency-check/**'
       - '.github/workflows/application-ci.yml'
 
 permissions:
@@ -87,66 +85,27 @@ jobs:
       - name: Assemble application jar
         run: ./gradlew bootJar --no-daemon
 
+      # Checks the dependencies in the built jar (build/libs) for known vulnerabilities. This replaces the
+      # old OWASP dependency-check job, which used the NVD API and often failed or was slow due to rate
+      # limits. Now Trivy is the only scanner: it checks the dependencies here and the container image
+      # later in the container-image job. Pinned to a commit SHA, not a tag, for the same security reason
+      # explained on the image-scan steps below.
+      - name: Scan dependencies for vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: build/libs
+          format: table
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: false
+          exit-code: '1'
+
       - name: Verify container image builds
         run: docker build -t library-management-application:ci .
 
-  dependency-check:
-    name: Dependency vulnerability scan
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v5
-
-      - name: Set up JDK
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '26'
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v5
-        with:
-          cache-read-only: ${{ github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/staging' && github.ref != 'refs/heads/production' && github.ref != 'refs/heads/main' }}
-
-      - name: Grant execute permission to Gradle wrapper
-        run: chmod +x ./gradlew
-
-      - name: Compute cache week
-        id: week
-        run: echo "week=$(date -u +%Y-%W)" >> "$GITHUB_OUTPUT"
-
-      - name: Cache OWASP dependency-check vulnerability database
-        uses: actions/cache@v5
-        with:
-          path: ~/.dependency-check-data
-          # Refreshed weekly so the NVD database doesn't get re-downloaded in full on every run, while still
-          # staying reasonably current.
-          key: dependency-check-data-${{ steps.week.outputs.week }}
-          restore-keys: |
-            dependency-check-data-
-
-      # NVD_API_KEY is configured as a repository secret, so this step now hard-fails the job on any
-      # Critical/High finding (per failBuildOnCVSS in build.gradle), exactly as originally intended.
-      - name: Run dependency vulnerability scan
-        id: dependency-check
-        run: ./gradlew dependencyCheckAnalyze --no-daemon
-        env:
-          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-          DEPENDENCY_CHECK_DATA_DIR: /home/runner/.dependency-check-data
-
-      - name: Publish dependency-check report
-        if: always()
-        uses: actions/upload-artifact@v5
-        with:
-          name: dependency-check-report
-          path: build/reports/dependency-check
-          retention-days: 7
-          if-no-files-found: warn
-
   container-image:
     name: Build, scan, and publish container image
-    needs: [build-and-test, dependency-check]
+    needs: [build-and-test]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
