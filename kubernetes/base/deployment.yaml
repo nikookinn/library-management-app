@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: library-management-application
+  labels:
+    app.kubernetes.io/name: library-management-application
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: library-management-application
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: library-management-application
+    spec:
+      containers:
+        - name: library-management-application
+          # Placeholder image, never used as-is. Each overlay sets the real image and tag.
+          image: library-management-application:unset
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http

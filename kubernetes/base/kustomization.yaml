@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - deployment.yaml
+
+# Placeholder image. Each overlay under kubernetes/overlays/<env>/ sets the real image
+# and tag for its own environment.
+images:
+  - name: library-management-application
+    newTag: unset

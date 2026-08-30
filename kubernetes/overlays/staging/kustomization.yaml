@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: library-staging
+
+resources:
+  - ../../base
+
+# The CI job "update-gitops-state" updates this on every push to `staging`, using the new
+# `sha-<commit>` tag. We never use `latest` here. Staging only gets an image after it was
+# already tested in `dev`.
+images:
+  - name: library-management-application
+    newTag: unset
