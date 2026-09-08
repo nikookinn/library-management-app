@@ -102,7 +102,9 @@ resource "aws_security_group" "cluster_nodes" {
 }
 
 # IAM role and instance profile for future kubeadm node instances, giving SSM Session Manager
-# access instead of an SSH key pair.
+# access instead of an SSH key pair. Only EC2 can assume this role - no human and no other AWS service can,
+# and no human is ever given this role directly (see the platform_operators group in the global layer for
+# how a person gets SSM access instead).
 data "aws_iam_policy_document" "cluster_node_assume_role" {
   statement {
     effect  = "Allow"
@@ -118,8 +120,15 @@ data "aws_iam_policy_document" "cluster_node_assume_role" {
 resource "aws_iam_role" "cluster_node" {
   name               = "${var.project_name}-cluster-node"
   assume_role_policy = data.aws_iam_policy_document.cluster_node_assume_role.json
+  description        = "Assumed by future kubeadm node EC2 instances. SSM-only administrative access, no SSH."
 }
 
+# Today this role only needs SSM (so a human can reach the node through Session Manager if needed, and so
+# the node can report its status back to AWS). When a real node responsibility shows up later - for example
+# reading a secret from Secrets Manager, or an Auto Scaling Group needing to describe/terminate itself for
+# lifecycle hooks - attach a new, narrowly-scoped policy to this same role rather than widening this one.
+# Do not attach anything broader (e.g. a managed *FullAccess policy) than the specific actions that new
+# feature needs.
 resource "aws_iam_role_policy_attachment" "cluster_node_ssm" {
   role       = aws_iam_role.cluster_node.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"

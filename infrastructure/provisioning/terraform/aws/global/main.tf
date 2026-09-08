@@ -300,6 +300,71 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private[each.key].id
 }
 
+# --- Human operator access (SSM Session Manager) ----------------------------------------------
+# A human never gets an EC2 instance role (those are only assumed by EC2 itself) and never gets SSH access
+# (no key pair is ever created in this project). Instead, a human is added to this IAM group, which grants
+# just enough permission to open an AWS Systems Manager Session Manager shell into an instance that belongs
+# to this project. Adding a real person to this group is done outside Terraform (by whoever administers IAM
+# users in the account), since this project does not manage human user accounts.
+data "aws_iam_policy_document" "ssm_operator_session_access" {
+  # Only allowed against instances tagged with this project's name (every instance gets that tag from
+  # `default_tags` in provider.tf), and only using the standard interactive-shell session document.
+  statement {
+    sid     = "StartSessionOnProjectInstances"
+    effect  = "Allow"
+    actions = ["ssm:StartSession"]
+    resources = [
+      "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:instance/*",
+      "arn:aws:ssm:${var.aws_region}::document/SSM-SessionManagerRunShell",
+    ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "ssm:resourceTag/Project"
+      values   = [var.project_name]
+    }
+  }
+
+  # A session's resource ID always starts with the caller's own IAM user name, so this scopes
+  # terminate/resume to sessions the same person started - never someone else's session.
+  statement {
+    sid       = "ManageOwnSessionsOnly"
+    effect    = "Allow"
+    actions   = ["ssm:TerminateSession", "ssm:ResumeSession"]
+    resources = ["arn:aws:ssm:*:*:session/$${aws:username}-*"]
+  }
+
+  # Read-only discovery calls. These do not support resource-level restriction, so the resource has to stay
+  # "*" - but the actions themselves are limited to listing/describing, no ability to change anything.
+  statement {
+    sid    = "ListSessionsAndInstances"
+    effect = "Allow"
+    actions = [
+      "ssm:DescribeSessions",
+      "ssm:GetConnectionStatus",
+      "ssm:DescribeInstanceInformation",
+      "ec2:DescribeInstances",
+      "ec2:DescribeInstanceStatus",
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "ssm_operator_session_access" {
+  name        = "${var.project_name}-ssm-operator-session-access"
+  description = "Lets a human operator open an SSM Session Manager shell into this project's EC2 instances. No SSH."
+  policy      = data.aws_iam_policy_document.ssm_operator_session_access.json
+}
+
+resource "aws_iam_group" "platform_operators" {
+  name = "${var.project_name}-platform-operators"
+}
+
+resource "aws_iam_group_policy_attachment" "platform_operators_ssm" {
+  group      = aws_iam_group.platform_operators.name
+  policy_arn = aws_iam_policy.ssm_operator_session_access.arn
+}
+
 # --- GitHub Actions authentication (OIDC, no static AWS credentials) -----------------------
 
 resource "aws_iam_openid_connect_provider" "github_actions" {
@@ -342,15 +407,81 @@ resource "aws_iam_role" "github_actions_terraform" {
   description        = "Assumed by GitHub Actions via OIDC to run Terraform. No static AWS credentials are used."
 }
 
-# Covers what Terraform needs now and in later phases: networking, the state bucket, and IAM
-# for the cluster's instance roles. We can narrow this down later once we know exactly what
-# each phase needs.
+# Least-privilege action lists instead of "ec2:*"/"iam:*". Most of these EC2 actions don't support
+# resource-level ARNs at all, so the resource is still "*" for that statement, but the action list itself
+# is scoped to only what the resources in this repo's Terraform actually create today (VPC, subnets, route
+# tables, security groups, EC2 instances, Elastic IPs). Extend this list only when a new resource block is
+# added, not ahead of time.
 data "aws_iam_policy_document" "github_actions_terraform_permissions" {
   statement {
-    sid    = "ManageNetworkingAndCompute"
+    sid    = "ManageNetworking"
     effect = "Allow"
     actions = [
-      "ec2:*",
+      "ec2:DescribeVpcs",
+      "ec2:CreateVpc",
+      "ec2:DeleteVpc",
+      "ec2:ModifyVpcAttribute",
+      "ec2:DescribeVpcAttribute",
+      "ec2:DescribeInternetGateways",
+      "ec2:CreateInternetGateway",
+      "ec2:DeleteInternetGateway",
+      "ec2:AttachInternetGateway",
+      "ec2:DetachInternetGateway",
+      "ec2:DescribeSubnets",
+      "ec2:CreateSubnet",
+      "ec2:DeleteSubnet",
+      "ec2:ModifySubnetAttribute",
+      "ec2:DescribeRouteTables",
+      "ec2:CreateRouteTable",
+      "ec2:DeleteRouteTable",
+      "ec2:CreateRoute",
+      "ec2:DeleteRoute",
+      "ec2:ReplaceRoute",
+      "ec2:AssociateRouteTable",
+      "ec2:DisassociateRouteTable",
+      "ec2:ReplaceRouteTableAssociation",
+      "ec2:DescribeSecurityGroups",
+      "ec2:DescribeSecurityGroupRules",
+      "ec2:CreateSecurityGroup",
+      "ec2:DeleteSecurityGroup",
+      "ec2:AuthorizeSecurityGroupIngress",
+      "ec2:RevokeSecurityGroupIngress",
+      "ec2:AuthorizeSecurityGroupEgress",
+      "ec2:RevokeSecurityGroupEgress",
+      "ec2:UpdateSecurityGroupRuleDescriptionsIngress",
+      "ec2:UpdateSecurityGroupRuleDescriptionsEgress",
+      "ec2:DescribeAvailabilityZones",
+      "ec2:DescribeAccountAttributes",
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:DescribeNetworkInterfaceAttribute",
+      "ec2:ModifyNetworkInterfaceAttribute",
+      "ec2:DescribeTags",
+      "ec2:CreateTags",
+      "ec2:DeleteTags",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "ManageComputeForNatAndFutureNodes"
+    effect = "Allow"
+    actions = [
+      "ec2:DescribeImages",
+      "ec2:DescribeInstances",
+      "ec2:DescribeInstanceStatus",
+      "ec2:DescribeInstanceTypes",
+      "ec2:DescribeInstanceCreditSpecifications",
+      "ec2:DescribeVolumes",
+      "ec2:RunInstances",
+      "ec2:TerminateInstances",
+      "ec2:StopInstances",
+      "ec2:StartInstances",
+      "ec2:ModifyInstanceAttribute",
+      "ec2:DescribeAddresses",
+      "ec2:AllocateAddress",
+      "ec2:ReleaseAddress",
+      "ec2:AssociateAddress",
+      "ec2:DisassociateAddress",
     ]
     resources = ["*"]
   }
@@ -362,7 +493,6 @@ data "aws_iam_policy_document" "github_actions_terraform_permissions" {
       "iam:CreateRole",
       "iam:DeleteRole",
       "iam:GetRole",
-      "iam:PassRole",
       "iam:TagRole",
       "iam:UntagRole",
       "iam:CreatePolicy",
@@ -386,8 +516,28 @@ data "aws_iam_policy_document" "github_actions_terraform_permissions" {
       "iam:GetOpenIDConnectProvider",
       "iam:UpdateOpenIDConnectProviderThumbprint",
       "iam:TagOpenIDConnectProvider",
+      "iam:CreateGroup",
+      "iam:DeleteGroup",
+      "iam:GetGroup",
+      "iam:AttachGroupPolicy",
+      "iam:DetachGroupPolicy",
+      "iam:ListAttachedGroupPolicies",
     ]
     resources = ["*"]
+  }
+
+  # iam:PassRole is how RunInstances attaches an instance profile's role to a new EC2 instance. It is kept in
+  # its own statement, scoped to only the instance roles this project actually creates, so this identity can
+  # never pass an unrelated, more privileged role to an instance (the classic PassRole privilege-escalation
+  # path).
+  statement {
+    sid     = "PassOnlyThisProjectsInstanceRoles"
+    effect  = "Allow"
+    actions = ["iam:PassRole"]
+    resources = [
+      aws_iam_role.nat_instance.arn,
+      "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.project_name}-cluster-node",
+    ]
   }
 
   statement {

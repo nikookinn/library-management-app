@@ -37,3 +37,13 @@ output "github_actions_role_arn" {
   description = "ARN GitHub Actions assumes (via OIDC) to run Terraform. Used as the `role-to-assume` input of aws-actions/configure-aws-credentials."
   value       = aws_iam_role.github_actions_terraform.arn
 }
+
+output "platform_operators_group_name" {
+  description = "IAM group name. Add a human IAM user to this group to let them open an SSM Session Manager shell into this project's EC2 instances. Group membership itself is managed outside Terraform."
+  value       = aws_iam_group.platform_operators.name
+}
+
+output "ssm_operator_session_access_policy_arn" {
+  description = "ARN of the managed policy attached to the platform_operators group. Useful if a human's SSM access needs to be granted directly on an existing IAM user instead of through the group."
+  value       = aws_iam_policy.ssm_operator_session_access.arn
+}
